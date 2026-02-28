@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookListTabContent } from "@/app/(site)/list/components/book-list-tab-content";
+import { BorrowedListTabContent } from "@/app/(site)/list/components/borrowed-list-tab-content";
 import { UserTabContent } from "@/app/(site)/list/components/user-tab-content";
 
 type ListTab = "borrowed-list" | "user" | "book-list";
@@ -70,9 +71,7 @@ export default function ListPage() {
           </TabsList>
 
           <TabsContent className="grid gap-4" value="borrowed-list">
-            <h1 className="text-display-xs font-semibold text-neutral-950 lg:display-sm">
-              Borrowed List
-            </h1>
+            <BorrowedListTabContent />
           </TabsContent>
 
           <TabsContent className="grid gap-4 lg:gap-6" value="user">
