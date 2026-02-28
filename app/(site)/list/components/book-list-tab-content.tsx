@@ -104,8 +104,11 @@ export function BookListTabContent() {
         Book List
       </h1>
 
-      <Button className="h-12 w-full rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90 lg:w-[216px]">
-        Add Book
+      <Button
+        asChild
+        className="h-12 w-full rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90 lg:w-[216px]"
+      >
+        <Link href="/book">Add Book</Link>
       </Button>
 
       <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
@@ -191,10 +194,11 @@ export function BookListTabContent() {
                 <Link href={`/preview/${book.id}`}>Preview</Link>
               </Button>
               <Button
+                asChild
                 className="h-11 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
                 variant="outline"
               >
-                Edit
+                <Link href={`/book/${book.id}`}>Edit</Link>
               </Button>
               <Button
                 className="h-11 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-semibold text-danger-300 shadow-none hover:bg-danger-300/10 lg:w-[96px]"

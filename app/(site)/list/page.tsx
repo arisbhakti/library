@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,10 +11,19 @@ type ListTab = "borrowed-list" | "user" | "book-list";
 
 export default function ListPage() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<ListTab>("user");
+  const tabParam = searchParams.get("tab");
+  const resolvedTab: ListTab =
+    tabParam === "borrowed-list" || tabParam === "book-list" || tabParam === "user"
+      ? tabParam
+      : "user";
+  const [activeTab, setActiveTab] = useState<ListTab>(resolvedTab);
 
   const role = searchParams.get("role") ?? "admin";
   const isAdmin = role === "admin";
+
+  useEffect(() => {
+    setActiveTab(resolvedTab);
+  }, [resolvedTab]);
 
   if (!isAdmin) {
     return (

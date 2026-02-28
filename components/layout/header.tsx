@@ -99,7 +99,9 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isAdminLibraryPage =
-    pathname.startsWith("/list") || pathname.startsWith("/preview");
+    pathname.startsWith("/list") ||
+    pathname.startsWith("/preview") ||
+    pathname.startsWith("/book");
   const resolvedIsLoggedIn =
     searchParams.get("auth") === "1" ||
     isLoggedIn ||
