@@ -72,7 +72,8 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     pathname.startsWith("/book-by-author") ||
     pathname.startsWith("/cart") ||
     pathname.startsWith("/checkout") ||
-    pathname.startsWith("/success");
+    pathname.startsWith("/success") ||
+    pathname.startsWith("/profile");
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">
