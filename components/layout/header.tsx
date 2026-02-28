@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,6 +62,8 @@ function CartButton() {
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const resolvedIsLoggedIn = searchParams.get("auth") === "1" || isLoggedIn;
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">
@@ -91,7 +94,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                 <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
               </button>
               <CartButton />
-              {isLoggedIn ? (
+              {resolvedIsLoggedIn ? (
                 <Avatar className="size-8">
                   <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
                   <AvatarFallback>JD</AvatarFallback>
@@ -115,7 +118,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
       <div className="hidden h-20 items-center px-[120px] lg:flex">
         <div className="flex w-full items-center justify-between gap-8">
           <DesktopBrand />
-          {isLoggedIn ? (
+          {resolvedIsLoggedIn ? (
             <div className="flex items-center gap-8">
               <div className="w-[420px]">
                 <SearchField />

@@ -3,15 +3,14 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 
-type PageShellProps = {
+type SiteLayoutProps = {
   children: ReactNode;
-  isLoggedIn?: boolean;
 };
 
-export function PageShell({ children, isLoggedIn = false }: PageShellProps) {
+export default function SiteLayout({ children }: SiteLayoutProps) {
   return (
     <div className="min-h-screen bg-neutral-100">
-      <Header isLoggedIn={isLoggedIn} />
+      <Header />
       {children}
       <Footer />
     </div>
