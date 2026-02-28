@@ -64,7 +64,8 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const resolvedIsLoggedIn = searchParams.get("auth") === "1" || isLoggedIn || pathname.startsWith("/detail");
+  const resolvedIsLoggedIn =
+    searchParams.get("auth") === "1" || isLoggedIn || pathname.startsWith("/detail") || pathname.startsWith("/category");
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">
