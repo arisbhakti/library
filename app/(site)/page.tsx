@@ -53,8 +53,11 @@ export default function HomePage() {
         <h2 className="display-xs font-semibold text-neutral-950">Recommendation</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
           {recommendationItems.map((book) => (
-            <article className="grid gap-2 rounded-xl border border-neutral-200 bg-neutral-25 p-2" key={book.id}>
-              <div className="relative aspect-[224/336] w-full overflow-hidden rounded-lg">
+            <article
+              className="grid gap-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-25"
+              key={book.id}
+            >
+              <div className="relative aspect-[224/336] w-full overflow-hidden rounded-t-2xl rounded-b-none">
                 <Image
                   alt={`${book.name} cover`}
                   className="object-cover"
@@ -63,7 +66,7 @@ export default function HomePage() {
                   src={book.image}
                 />
               </div>
-              <div className="grid gap-0">
+              <div className="grid gap-0 p-3">
                 <p className="text-sm font-semibold text-neutral-950 lg:text-md">{book.name}</p>
                 <p className="text-xs text-neutral-500 lg:text-sm">{book.author}</p>
                 <div className="flex items-center gap-1">
