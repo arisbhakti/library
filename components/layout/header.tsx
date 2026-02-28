@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,8 +62,9 @@ function CartButton() {
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const resolvedIsLoggedIn = searchParams.get("auth") === "1" || isLoggedIn;
+  const resolvedIsLoggedIn = searchParams.get("auth") === "1" || isLoggedIn || pathname.startsWith("/detail");
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">

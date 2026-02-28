@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
@@ -21,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${quicksand.className} ${quicksand.variable} antialiased`}>
+      <body
+        className={`${quicksand.className} ${quicksand.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
