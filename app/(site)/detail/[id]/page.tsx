@@ -204,10 +204,10 @@ export default function DetailPage() {
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
             {relatedBooks.map((book) => (
               <article
-                className="grid gap-2 rounded-xl border border-neutral-200 bg-neutral-25 p-2"
+                className="grid gap-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-25"
                 key={book.id}
               >
-                <div className="relative aspect-[224/336] w-full overflow-hidden rounded-lg">
+                <div className="relative aspect-[224/336] w-full overflow-hidden rounded-t-2xl rounded-b-none">
                   <Image
                     alt={`${book.name} cover`}
                     className="object-cover"
@@ -216,7 +216,7 @@ export default function DetailPage() {
                     src={book.image}
                   />
                 </div>
-                <div className="grid gap-0">
+                <div className="grid gap-0 p-3">
                   <p className="text-sm font-semibold text-neutral-950 lg:text-md">
                     {book.name}
                   </p>
