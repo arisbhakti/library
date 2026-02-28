@@ -8,8 +8,86 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-quicksand);
+  --font-mono: var(--font-quicksand);
+
+  --text-xs: 12px;
+  --text-xs--line-height: 24px;
+  --text-sm: 14px;
+  --text-sm--line-height: 28px;
+  --text-md: 16px;
+  --text-md--line-height: 30px;
+  --text-lg: 18px;
+  --text-lg--line-height: 32px;
+  --text-xl: 20px;
+  --text-xl--line-height: 34px;
+
+  --text-display-xs: 24px;
+  --text-display-xs--line-height: 36px;
+  --text-display-sm: 28px;
+  --text-display-sm--line-height: 38px;
+  --text-display-md: 32px;
+  --text-display-md--line-height: 42px;
+  --text-display-lg: 36px;
+  --text-display-lg--line-height: 44px;
+  --text-display-xl: 40px;
+  --text-display-xl--line-height: 56px;
+  --text-display-2xl: 48px;
+  --text-display-2xl--line-height: 60px;
+  --text-display-3xl: 56px;
+  --text-display-3xl--line-height: 68px;
+
+  --color-primary-100: #f6f9fe;
+  --color-primary-200: #d2e3ff;
+  --color-primary-300: #1c65da;
+
+  --color-neutral-25: #fdfdfd;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e9eaeb;
+  --color-neutral-300: #d5d7da;
+  --color-neutral-400: #a4a7ae;
+  --color-neutral-500: #717680;
+  --color-neutral-600: #535862;
+  --color-neutral-700: #414651;
+  --color-neutral-800: #252b37;
+  --color-neutral-900: #181d27;
+  --color-neutral-950: #0a0d12;
+}
+
+@utility display-xs {
+  font-size: var(--text-display-xs);
+  line-height: var(--text-display-xs--line-height);
+}
+
+@utility display-sm {
+  font-size: var(--text-display-sm);
+  line-height: var(--text-display-sm--line-height);
+}
+
+@utility display-md {
+  font-size: var(--text-display-md);
+  line-height: var(--text-display-md--line-height);
+}
+
+@utility display-lg {
+  font-size: var(--text-display-lg);
+  line-height: var(--text-display-lg--line-height);
+}
+
+@utility display-xl {
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+}
+
+@utility display-2xl {
+  font-size: var(--text-display-2xl);
+  line-height: var(--text-display-2xl--line-height);
+}
+
+@utility display-3xl {
+  font-size: var(--text-display-3xl);
+  line-height: var(--text-display-3xl--line-height);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +100,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-quicksand), sans-serif;
 }
