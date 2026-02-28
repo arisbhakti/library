@@ -8,6 +8,12 @@ import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 
 type HeaderProps = {
@@ -60,8 +66,36 @@ function CartButton() {
   );
 }
 
+function UserMenuItems({ mobile = false }: { mobile?: boolean }) {
+  const regularItemClass = mobile
+    ? "h-14 cursor-pointer rounded-2xl px-4 text-display-xs font-medium text-neutral-950 focus:bg-neutral-100 focus:text-neutral-950"
+    : "h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-neutral-950 focus:bg-neutral-100 focus:text-neutral-950";
+
+  const logoutItemClass = mobile
+    ? "h-14 cursor-pointer rounded-2xl px-4 text-display-xs font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
+    : "h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300";
+
+  return (
+    <div className="grid gap-1">
+      <DropdownMenuItem asChild className={regularItemClass}>
+        <Link href="/profile">Profile</Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild className={regularItemClass}>
+        <Link href="/profile?tab=borrowed-list">Borrowed List</Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild className={regularItemClass}>
+        <Link href="/profile?tab=reviews">Reviews</Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild className={logoutItemClass}>
+        <Link href="/login">Logout</Link>
+      </DropdownMenuItem>
+    </div>
+  );
+}
+
 export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const resolvedIsLoggedIn =
@@ -98,27 +132,71 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               <button
                 aria-label="Open search"
                 className="flex h-8 w-8 items-center justify-center"
-                onClick={() => setIsSearchOpen(true)}
+                onClick={() => {
+                  setIsMobileGuestMenuOpen(false);
+                  setIsSearchOpen(true);
+                }}
                 type="button"
               >
                 <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
               </button>
               <CartButton />
               {resolvedIsLoggedIn ? (
-                <Avatar className="size-8">
-                  <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button aria-label="Open profile menu" className="flex size-8 items-center justify-center" type="button">
+                      <Avatar className="size-8">
+                        <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
+                        <AvatarFallback>JD</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-[calc(100vw-32px)] rounded-4xl border-neutral-200 bg-neutral-25 p-4 shadow-none lg:hidden"
+                    sideOffset={20}
+                  >
+                    <UserMenuItems mobile />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
-                <button aria-label="Open menu" className="flex h-8 w-8 items-center justify-center" type="button">
-                  <Image
-                    alt=""
-                    aria-hidden="true"
-                    height={24}
-                    src="/icon-humberger-menu.svg"
-                    width={24}
-                  />
-                </button>
+                <DropdownMenu
+                  onOpenChange={setIsMobileGuestMenuOpen}
+                  open={isMobileGuestMenuOpen}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <button aria-label="Open menu" className="flex h-8 w-8 items-center justify-center" type="button">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        height={24}
+                        src={isMobileGuestMenuOpen ? "/icon-close-search.svg" : "/icon-humberger-menu.svg"}
+                        width={24}
+                      />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-[calc(100vw-32px)] rounded-4xl border-neutral-200 bg-neutral-25 p-4 shadow-none lg:hidden"
+                    sideOffset={20}
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        asChild
+                        className="h-10 rounded-full border border-neutral-300 bg-neutral-25 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+                        variant="outline"
+                      >
+                        <Link href="/login">Login</Link>
+                      </Button>
+                      <Button
+                        asChild
+                        className="h-10 rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90"
+                      >
+                        <Link href="/register">Register</Link>
+                      </Button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
@@ -135,14 +213,25 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               </div>
               <div className="flex items-center gap-4">
                 <CartButton />
-                <button className="flex items-center gap-2" type="button">
-                  <Avatar className="size-8">
-                    <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                    <AvatarFallback>JD</AvatarFallback>
-                  </Avatar>
-                  <span className="text-md font-semibold text-neutral-950">John Doe</span>
-                  <ChevronDown className="h-4 w-4 text-neutral-800" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2" type="button">
+                      <Avatar className="size-8">
+                        <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
+                        <AvatarFallback>JD</AvatarFallback>
+                      </Avatar>
+                      <span className="text-md font-semibold text-neutral-950">John Doe</span>
+                      <ChevronDown className="h-4 w-4 text-neutral-800" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-[220px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
+                    sideOffset={12}
+                  >
+                    <UserMenuItems />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ) : (
