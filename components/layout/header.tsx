@@ -65,7 +65,11 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const resolvedIsLoggedIn =
-    searchParams.get("auth") === "1" || isLoggedIn || pathname.startsWith("/detail") || pathname.startsWith("/category");
+    searchParams.get("auth") === "1" ||
+    isLoggedIn ||
+    pathname.startsWith("/detail") ||
+    pathname.startsWith("/category") ||
+    pathname.startsWith("/book-by-author");
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">
