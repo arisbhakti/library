@@ -98,7 +98,8 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isAdminListPage = pathname.startsWith("/list");
+  const isAdminLibraryPage =
+    pathname.startsWith("/list") || pathname.startsWith("/preview");
   const resolvedIsLoggedIn =
     searchParams.get("auth") === "1" ||
     isLoggedIn ||
@@ -110,7 +111,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     pathname.startsWith("/success") ||
     pathname.startsWith("/profile");
 
-  if (isAdminListPage) {
+  if (isAdminLibraryPage) {
     return (
       <header className="border-b border-neutral-200 bg-neutral-25">
         <div className="flex h-16 items-center justify-between px-4 lg:hidden">
