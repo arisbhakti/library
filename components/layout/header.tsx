@@ -98,6 +98,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isAdminListPage = pathname.startsWith("/list");
   const resolvedIsLoggedIn =
     searchParams.get("auth") === "1" ||
     isLoggedIn ||
@@ -108,6 +109,72 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/success") ||
     pathname.startsWith("/profile");
+
+  if (isAdminListPage) {
+    return (
+      <header className="border-b border-neutral-200 bg-neutral-25">
+        <div className="flex h-16 items-center justify-between px-4 lg:hidden">
+          <MobileBrand />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="Open profile menu"
+                className="flex size-9 items-center justify-center"
+                type="button"
+              >
+                <Avatar className="size-9">
+                  <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-[148px] rounded-2xl border-neutral-200 bg-neutral-25 p-2 shadow-none lg:hidden"
+              sideOffset={12}
+            >
+              <DropdownMenuItem
+                asChild
+                className="h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
+              >
+                <Link href="/login">Logout</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="hidden h-20 items-center px-[120px] lg:flex">
+          <div className="flex w-full items-center justify-between">
+            <DesktopBrand />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2" type="button">
+                  <Avatar className="size-8">
+                    <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                  <span className="text-md font-semibold text-neutral-950">John Doe</span>
+                  <ChevronDown className="h-4 w-4 text-neutral-800" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-[160px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
+                sideOffset={12}
+              >
+                <DropdownMenuItem
+                  asChild
+                  className="h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
+                >
+                  <Link href="/login">Logout</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="border-b border-neutral-200 bg-neutral-25">
