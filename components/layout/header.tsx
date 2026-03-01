@@ -122,10 +122,14 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const startsWithSegment = (segment: string) =>
+    pathname === segment || pathname.startsWith(`${segment}/`);
+
   const isAdminLibraryPage =
-    pathname.startsWith("/list") ||
-    pathname.startsWith("/preview") ||
-    pathname.startsWith("/book");
+    startsWithSegment("/list") ||
+    startsWithSegment("/preview") ||
+    startsWithSegment("/book");
   const resolvedIsLoggedIn =
     searchParams.get("auth") === "1" ||
     isLoggedIn ||
