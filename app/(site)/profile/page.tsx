@@ -95,9 +95,9 @@ const reviewItems = Array.from({ length: 3 }, (_, index) => ({
 }));
 
 export default function ProfilePage() {
-  const [borrowedFilter, setBorrowedFilter] = useState<
-    "all" | BorrowedStatus
-  >("all");
+  const [borrowedFilter, setBorrowedFilter] = useState<"all" | BorrowedStatus>(
+    "all",
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [reviewSearchTerm, setReviewSearchTerm] = useState("");
@@ -133,7 +133,7 @@ export default function ProfilePage() {
       (item) =>
         item.name.toLowerCase().includes(query) ||
         item.author.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query)
+        item.category.toLowerCase().includes(query),
     );
   }, [borrowedFilter, searchTerm]);
 
@@ -147,7 +147,7 @@ export default function ProfilePage() {
       (item) =>
         item.name.toLowerCase().includes(query) ||
         item.author.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query)
+        item.category.toLowerCase().includes(query),
     );
   }, [reviewSearchTerm]);
 
@@ -155,21 +155,21 @@ export default function ProfilePage() {
     <main className="grid gap-6 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
       <section className="grid w-full gap-6 lg:max-w-[1120px]">
         <Tabs className="w-full" defaultValue="profile">
-          <TabsList className="h-28 w-full rounded-4xl bg-neutral-200 p-2 lg:h-[88px] lg:w-[640px] lg:rounded-3xl lg:p-3">
+          <TabsList className="h-14! w-full md:w-139.25! rounded-3xl bg-neutral-100 p-2   ">
             <TabsTrigger
-              className="h-full rounded-2xl text-display-xs font-semibold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-display-xs"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="profile"
             >
               Profile
             </TabsTrigger>
             <TabsTrigger
-              className="h-full rounded-2xl text-display-xs font-semibold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-display-xs"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="borrowed-list"
             >
               Borrowed List
             </TabsTrigger>
             <TabsTrigger
-              className="h-full rounded-2xl text-display-xs font-semibold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-display-xs"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="reviews"
             >
               Reviews
@@ -177,7 +177,9 @@ export default function ProfilePage() {
           </TabsList>
 
           <TabsContent className="grid gap-4" value="profile">
-            <h1 className="display-md font-semibold text-neutral-950">Profile</h1>
+            <h1 className="display-md font-semibold text-neutral-950">
+              Profile
+            </h1>
             <article className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 lg:p-5">
               <Avatar className="size-32 lg:size-20">
                 <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
@@ -186,16 +188,28 @@ export default function ProfilePage() {
 
               <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-display-xs text-neutral-950 lg:text-xl">Name</span>
-                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">Johndoe</span>
+                  <span className="text-display-xs text-neutral-950 lg:text-xl">
+                    Name
+                  </span>
+                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                    Johndoe
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-display-xs text-neutral-950 lg:text-xl">Email</span>
-                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">johndoe@email.com</span>
+                  <span className="text-display-xs text-neutral-950 lg:text-xl">
+                    Email
+                  </span>
+                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                    johndoe@email.com
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-display-xs text-neutral-950 lg:text-xl">Nomor Handphone</span>
-                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">081234567890</span>
+                  <span className="text-display-xs text-neutral-950 lg:text-xl">
+                    Nomor Handphone
+                  </span>
+                  <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                    081234567890
+                  </span>
                 </div>
               </div>
 
@@ -380,7 +394,9 @@ export default function ProfilePage() {
                             alt=""
                             aria-hidden="true"
                             className={
-                              isActive ? "h-10 w-10" : "h-10 w-10 grayscale opacity-50"
+                              isActive
+                                ? "h-10 w-10"
+                                : "h-10 w-10 grayscale opacity-50"
                             }
                             height={40}
                             src="/icon-star.svg"
@@ -411,7 +427,9 @@ export default function ProfilePage() {
           </TabsContent>
 
           <TabsContent className="grid gap-4" value="reviews">
-            <h1 className="display-md font-semibold text-neutral-950">Reviews</h1>
+            <h1 className="display-md font-semibold text-neutral-950">
+              Reviews
+            </h1>
 
             <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
               <Image
