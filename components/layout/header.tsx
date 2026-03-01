@@ -328,7 +328,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
           <DesktopBrand />
           {resolvedIsLoggedIn ? (
             <div className="flex items-center gap-8">
-              <div className="w-[420px]">
+              <div className="w-[500px]">
                 <SearchField />
               </div>
               <div className="flex items-center gap-4">

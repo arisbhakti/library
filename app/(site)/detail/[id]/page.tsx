@@ -32,7 +32,7 @@ const relatedBooks = Array.from({ length: 5 }, (_, index) => ({
 export default function DetailPage() {
   return (
     <>
-      <main className="grid gap-4 lg:gap-6px-4 pb-24 pt-4 lg:px-30 lg:pb-10 lg:pt-8 px-4">
+      <main className="grid gap-4 lg:gap-6px-4 pb-24 pt-4 lg:px-30 lg:pb-20 lg:pt-8 px-4">
         <Breadcrumb>
           <BreadcrumbList className="gap-1 text-xs lg:text-sm">
             <BreadcrumbItem>
@@ -83,44 +83,56 @@ export default function DetailPage() {
             </div>
 
             <div className="grid gap-1">
-              <h1 className="display-sm font-semibold text-neutral-950 lg:display-xs">
+              <h1 className="display-xs font-bold text-neutral-950 lg:display-sm">
                 The Psychology of Money
               </h1>
-              <p className="text-xl text-neutral-700">Morgan Housel</p>
+              <p className="text-sm md:text-md text-neutral-700">
+                Morgan Housel
+              </p>
               <div className="flex items-center gap-1">
                 <Image
                   alt=""
                   aria-hidden="true"
-                  height={20}
+                  height={24}
                   src="/icon-star.svg"
-                  width={20}
+                  width={24}
                 />
-                <span className="text-xl font-semibold text-neutral-950">
-                  4.9
-                </span>
+                <span className="text-md font-bold text-neutral-950">4.9</span>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div className="grid gap-0">
-                <p className="display-xs font-semibold text-neutral-950">320</p>
-                <p className="text-xl text-neutral-900">Page</p>
+                <p className="text-lg md:display-xs font-bold text-neutral-950">
+                  320
+                </p>
+                <p className="text-sm text-neutral-900 md:text-md font-medium">
+                  Page
+                </p>
               </div>
               <div className="grid gap-0 border-l border-neutral-300 pl-3">
-                <p className="display-xs font-semibold text-neutral-950">212</p>
-                <p className="text-xl text-neutral-900">Rating</p>
+                <p className="text-lg md:display-xs font-bold text-neutral-950">
+                  212
+                </p>
+                <p className="text-sm text-neutral-900 md:text-md font-medium">
+                  Rating
+                </p>
               </div>
               <div className="grid gap-0 border-l border-neutral-300 pl-3">
-                <p className="display-xs font-semibold text-neutral-950">179</p>
-                <p className="text-xl text-neutral-900">Reviews</p>
+                <p className="text-lg md:display-xs font-bold text-neutral-950">
+                  179
+                </p>
+                <p className="text-sm text-neutral-900 md:text-md font-medium">
+                  Reviews
+                </p>
               </div>
             </div>
 
             <section className="grid gap-2 border-t border-neutral-200 pt-4">
-              <h2 className="display-xs font-semibold text-neutral-950">
+              <h2 className="text-xl font-bold text-neutral-950">
                 Description
               </h2>
-              <p className="text-sm text-neutral-900 lg:text-md">
+              <p className="text-sm text-neutral-900 lg:text-md font-medium">
                 The Psychology of Money explores how emotions, biases, and human
                 behavior shape the way we think about money, investing, and
                 financial decisions. Morgan Housel shares timeless lessons on
@@ -128,20 +140,34 @@ export default function DetailPage() {
                 not about knowledge, but about behavior.
               </p>
             </section>
+            <div className="hidden md:flex gap-3 w-fit">
+              <Button
+                className="h-11 w-50 p-2 rounded-full border border-neutral-300 bg-neutral-25 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100"
+                variant="outline"
+              >
+                Add to Cart
+              </Button>
+              <Button className="h-11 w-50 p-2 rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90">
+                Borrow Book
+              </Button>
+            </div>
           </div>
         </section>
 
         <section className="grid gap-4 border-t border-neutral-200 pt-8">
-          <h2 className="display-xs font-semibold text-neutral-950">Review</h2>
+          <h2 className="display-xs md:display-lg font-extrabold text-neutral-950">
+            Review
+          </h2>
           <div className="flex items-center gap-1">
             <Image
               alt=""
               aria-hidden="true"
-              height={20}
+              height={24}
               src="/icon-star.svg"
-              width={20}
+              width={24}
+              className="md:w-8.5 md:h-8.5"
             />
-            <span className="text-xl font-semibold text-neutral-950">
+            <span className="text-md md:text-xl font-bold md:font-extrabold text-neutral-950">
               4.9 (24 Ulasan)
             </span>
           </div>
@@ -153,15 +179,15 @@ export default function DetailPage() {
                 key={review.id}
               >
                 <div className="flex items-center gap-3">
-                  <Avatar className="size-10">
+                  <Avatar className="size-14.5 md:size-16">
                     <AvatarImage alt={review.name} src={review.avatar} />
                     <AvatarFallback>JD</AvatarFallback>
                   </Avatar>
                   <div className="grid gap-0">
-                    <p className="text-md font-semibold text-neutral-950">
+                    <p className="text-sm md:text-lg font-bold text-neutral-950">
                       {review.name}
                     </p>
-                    <p className="text-sm text-neutral-700">
+                    <p className="text-sm md:text-md text-neutral-950 font-medium">
                       {review.datetime}
                     </p>
                   </div>
@@ -172,15 +198,15 @@ export default function DetailPage() {
                     <Image
                       alt=""
                       aria-hidden="true"
-                      height={16}
+                      height={24}
                       key={index}
                       src="/icon-star.svg"
-                      width={16}
+                      width={24}
                     />
                   ))}
                 </div>
 
-                <p className="text-sm text-neutral-900 lg:text-md">
+                <p className="text-sm md:text-md text-neutral-950 font-semibold">
                   {review.text}
                 </p>
               </article>
@@ -189,7 +215,7 @@ export default function DetailPage() {
 
           <div className="flex items-center justify-center">
             <Button
-              className="h-10 rounded-full border border-neutral-300 bg-neutral-25 px-10 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+              className="h-10 w-37.5 md:h-12 md:w-50 rounded-full border border-neutral-300 bg-neutral-25 px-10 text-sm md:text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100"
               variant="outline"
             >
               Load More
@@ -197,41 +223,39 @@ export default function DetailPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 border-t border-neutral-200 pt-8">
-          <h2 className="display-xs font-semibold text-neutral-950">
+        <section className="grid gap-4 md:gap-10 border-t border-neutral-200 pt-8">
+          <h2 className="display-xs font-bold md:display-lg text-neutral-950">
             Related Books
           </h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
             {relatedBooks.map((book) => (
               <article
-                className="grid gap-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-25"
+                className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
                 key={book.id}
               >
-                <div className="relative aspect-[224/336] w-full overflow-hidden rounded-t-2xl rounded-b-none">
-                  <Image
-                    alt={`${book.name} cover`}
-                    className="object-cover"
-                    fill
-                    sizes="(min-width: 1024px) calc((100vw - 304px) / 5), calc((100vw - 44px) / 2)"
-                    src={book.image}
-                  />
-                </div>
-                <div className="grid gap-0 p-3">
-                  <p className="text-sm font-semibold text-neutral-950 lg:text-md">
+                <Image
+                  alt={`${book.name} cover`}
+                  className="w-full object-cover md:h-84!"
+                  height={258}
+                  width={258}
+                  src={book.image}
+                />
+                <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                  <p className="text-sm font-bold text-neutral-950 lg:text-lg">
                     {book.name}
                   </p>
-                  <p className="text-xs text-neutral-500 lg:text-sm">
+                  <p className="text-sm text-neutral-700 lg:text-md">
                     {book.author}
                   </p>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 justi">
                     <Image
                       alt=""
                       aria-hidden="true"
-                      height={16}
+                      height={24}
                       src="/icon-star.svg"
-                      width={16}
+                      width={24}
                     />
-                    <span className="text-xs text-neutral-700 lg:text-sm">
+                    <span className="text-sm text-neutral-700 lg:text-md font-semibold">
                       {book.rating}
                     </span>
                   </div>

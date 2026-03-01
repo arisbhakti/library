@@ -10,7 +10,7 @@ type SiteLayoutProps = {
 
 export default function SiteLayout({ children }: SiteLayoutProps) {
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen ">
       <Header />
       {children}
       <Footer />
