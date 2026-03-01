@@ -51,7 +51,7 @@ function MobileBrand() {
 
 function SearchField({ compact = false }: { compact?: boolean }) {
   return (
-    <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4">
+    <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4">
       <Image
         alt=""
         aria-hidden="true"
@@ -60,7 +60,7 @@ function SearchField({ compact = false }: { compact?: boolean }) {
         width={20}
       />
       <Input
-        className="h-full border-0 bg-transparent p-0 text-sm text-neutral-950 shadow-none placeholder:text-neutral-500 focus-visible:border-transparent focus-visible:ring-0 lg:text-md"
+        className="h-full border-0 bg-transparent p-0 text-sm text-neutral-950 shadow-none placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0 font-medium"
         placeholder="Search book"
         type="text"
       />
@@ -323,11 +323,11 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
         )}
       </div>
 
-      <div className="hidden h-20 items-center px-[120px] lg:flex">
+      {/* <div className="hidden h-20 items-center px-[120px] lg:flex">
         <div className="flex w-full items-center justify-between gap-8">
           <DesktopBrand />
           {resolvedIsLoggedIn ? (
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-8 ">
               <div className="w-[500px]">
                 <SearchField />
               </div>
@@ -373,6 +373,59 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               </Button>
             </div>
           )}
+        </div>
+      </div> */}
+      <div className="hidden h-20 items-center px-[120px] lg:flex">
+        <div className="flex w-full items-center justify-between gap-8">
+          <DesktopBrand />
+          {resolvedIsLoggedIn ? (
+            <div className="w-[500px]">
+              <SearchField />
+            </div>
+          ) : null}
+          {resolvedIsLoggedIn ? (
+            <div className="flex items-center gap-4">
+              <CartButton />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2" type="button">
+                    <Avatar className="size-8">
+                      <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
+                      <AvatarFallback>JD</AvatarFallback>
+                    </Avatar>
+                    <span className="text-md font-semibold text-neutral-950">
+                      John Doe
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-neutral-800" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-[220px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
+                  sideOffset={12}
+                >
+                  <UserMenuItems />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : null}
+          {!resolvedIsLoggedIn ? (
+            <div className="flex items-center gap-3">
+              <Button
+                asChild
+                className="h-12 w-40.75 rounded-full border border-neutral-300 bg-neutral-25 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100"
+                variant="outline"
+              >
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button
+                asChild
+                className="h-12 w-40.75 rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
+              >
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>
