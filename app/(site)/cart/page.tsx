@@ -55,7 +55,7 @@ export default function CartPage() {
 
   const selectedCount = useMemo(
     () => cartItems.filter((item) => item.checked).length,
-    [cartItems]
+    [cartItems],
   );
   const isAllSelected = selectedCount === cartItems.length;
 
@@ -65,14 +65,16 @@ export default function CartPage() {
 
   const handleSelectItem = (id: number, checked: boolean) => {
     setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, checked } : item))
+      prev.map((item) => (item.id === id ? { ...item, checked } : item)),
     );
   };
 
   return (
     <>
       <main className="grid gap-6 px-4 pb-24 pt-4 lg:gap-8 lg:px-[120px] lg:pb-10 lg:pt-8">
-        <h1 className="display-md font-semibold text-neutral-950">My Cart</h1>
+        <h1 className="display-xs md:display-lg font-bold text-neutral-950">
+          My Cart
+        </h1>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_320px] lg:gap-10">
           <section className="grid gap-0">
@@ -82,7 +84,9 @@ export default function CartPage() {
                 className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
                 onCheckedChange={(checked) => handleSelectAll(checked === true)}
               />
-              <span className="display-xs text-neutral-950">Select All</span>
+              <span className="text-md font-semibold text-neutral-950">
+                Select All
+              </span>
             </label>
 
             <div className="grid gap-0">
@@ -100,26 +104,28 @@ export default function CartPage() {
                       }
                     />
 
-                    <div className="relative aspect-[224/336] w-[72px] overflow-hidden rounded-md lg:w-[80px]">
+                    <div className="flex flex-row gap-3 md:gap-4">
                       <Image
                         alt={`${item.name} cover`}
-                        className="object-cover"
-                        fill
-                        sizes="80px"
+                        className="md:w-23 md:h-34.5"
+                        width={70}
+                        height={106}
                         src={item.image}
                       />
-                    </div>
 
-                    <div className="grid content-start gap-1">
-                      <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-                        <span className="text-md font-semibold text-neutral-950">
-                          {item.category}
-                        </span>
+                      <div className="flex flex-col items-start justify-center gap-1">
+                        <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2">
+                          <span className="text-sm font-bold text-neutral-950">
+                            {item.category}
+                          </span>
+                        </div>
+                        <p className="text-sm md:text-lg font-bold text-neutral-950">
+                          {item.name}
+                        </p>
+                        <p className="text-sm md:text-md font-medium text-neutral-700">
+                          {item.author}
+                        </p>
                       </div>
-                      <p className="display-xs font-semibold text-neutral-950">
-                        {item.name}
-                      </p>
-                      <p className="text-xl text-neutral-700">{item.author}</p>
                     </div>
                   </div>
                 </article>
@@ -127,18 +133,20 @@ export default function CartPage() {
             </div>
           </section>
 
-          <aside className="hidden lg:block">
-            <div className="grid gap-4 rounded-2xl border border-neutral-200 bg-neutral-25 p-5">
-              <h2 className="display-xs font-semibold text-neutral-950">
+          <aside className="hidden lg:block w-79.5">
+            <div className="grid gap-6 rounded-3xl border border-neutral-200 bg-neutral-25 p-5">
+              <h2 className="text-xl font-bold text-neutral-950">
                 Loan Summary
               </h2>
               <div className="flex items-center justify-between">
-                <span className="text-xl text-neutral-900">Total Book</span>
-                <span className="display-xs font-semibold text-neutral-950">
+                <span className="text-md font-medium text-neutral-900">
+                  Total Book
+                </span>
+                <span className="text-md font-bold text-neutral-950">
                   {selectedCount} Items
                 </span>
               </div>
-              <Button className="h-10 rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90">
+              <Button className="h-12 rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90">
                 Borrow Book
               </Button>
             </div>
