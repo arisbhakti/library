@@ -115,7 +115,7 @@ function MobileFilterSidebar() {
 
 export default function CategoryPage() {
   return (
-    <SidebarProvider className="!block bg-neutral-100">
+    <SidebarProvider className="block! ">
       <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
         <h1 className="display-xs md:display-lg font-bold text-neutral-950">
           Book List

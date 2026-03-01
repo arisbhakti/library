@@ -10,7 +10,7 @@ const books = Array.from({ length: 8 }, (_, index) => ({
 
 export default function BookByAuthorPage() {
   return (
-    <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
+    <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-30 lg:py-8 ">
       <section className="grid gap-3 rounded-2xl  bg-white p-3 md:p-4 shadow-card">
         <div className="flex items-center gap-3 md:gap-4">
           <Image

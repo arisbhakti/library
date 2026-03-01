@@ -30,7 +30,7 @@ const popularAuthors = Array.from({ length: 4 }, (_, index) => ({
 
 export default function HomePage() {
   return (
-    <main className="grid gap-8 px-4 py-4 lg:gap-10 lg:px-[120px] lg:py-8">
+    <main className="grid gap-8 px-4 py-4 lg:gap-10 lg:px-[120px] lg:py-8 bg-white">
       <HomeCarousel />
 
       <section className="grid gap-3 lg:gap-4">
