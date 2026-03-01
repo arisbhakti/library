@@ -122,13 +122,21 @@ export function BorrowedListTabContent() {
   }, [borrowedFilter, searchTerm]);
 
   return (
-    <section className="grid gap-4">
-      <h1 className="display-md font-semibold text-neutral-950">Borrowed List</h1>
+    <section className="grid gap-4 md:gap-6">
+      <h1 className="display-xs md:display-sm font-bold text-neutral-950">
+        Borrowed List
+      </h1>
 
-      <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
-        <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4 lg:w-[560px]">
+        <Image
+          alt=""
+          aria-hidden="true"
+          height={20}
+          src="/icon-search.svg"
+          width={20}
+        />
         <input
-          className="h-full w-full bg-transparent text-display-xs text-neutral-950 outline-none placeholder:text-neutral-500 lg:text-md"
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500 "
           onChange={(event) => setSearchTerm(event.target.value)}
           placeholder="Search book"
           type="text"
@@ -144,8 +152,8 @@ export function BorrowedListTabContent() {
             <Button
               className={
                 isActive
-                  ? "h-12 rounded-full border border-primary-300 bg-neutral-25 px-5 text-display-xs font-semibold text-primary-300 shadow-none hover:bg-neutral-25"
-                  : "h-12 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-display-xs font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+                  ? "h-10 rounded-full border border-primary-300 bg-neutral-25 px-5 text-sm md:text-md font-bold text-primary-300 shadow-none hover:bg-neutral-25"
+                  : "h-10 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-sm md:text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
               }
               key={filter.value}
               onClick={() => setBorrowedFilter(filter.value)}
@@ -160,22 +168,26 @@ export function BorrowedListTabContent() {
       <div className="grid gap-4">
         {filteredBorrowedItems.map((item) => (
           <article
-            className="grid gap-3 rounded-3xl border border-neutral-200 bg-neutral-25 p-4"
+            className="grid gap-3 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 shadow-card"
             key={item.id}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="display-xs font-semibold text-neutral-950">Status</span>
+                <span className="text-sm md:text-md font-bold text-neutral-950">
+                  Status
+                </span>
                 <span
-                  className={`rounded-md px-2 py-1 text-md font-semibold ${statusStyles[item.status]}`}
+                  className={`rounded-lg px-2 py-1 text-sm font-bold ${statusStyles[item.status]}`}
                 >
                   {statusLabels[item.status]}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="display-xs font-semibold text-neutral-950">Due Date</span>
-                <span className="rounded-md bg-[#FFEAF0] px-2 py-1 text-md font-semibold text-danger-300">
+                <span className="text-sm md:text-md font-bold text-neutral-950">
+                  Due Date
+                </span>
+                <span className="rounded-lg bg-[#FFEAF0] px-2 py-1 text-sm font-bold text-[#EE1D52]">
                   {item.dueDate}
                 </span>
               </div>
@@ -184,39 +196,32 @@ export function BorrowedListTabContent() {
             <div className="h-px w-full bg-neutral-200" />
 
             <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div className="flex items-start gap-3">
-                <div className="relative aspect-[224/336] w-[116px] overflow-hidden rounded-md lg:w-[80px]">
-                  <Image
-                    alt={`${item.name} cover`}
-                    className="object-cover"
-                    fill
-                    sizes="120px"
-                    src={item.image}
-                  />
-                </div>
+              <div className="flex flex-row gap-3 md:gap-4">
+                <Image
+                  alt={`${item.name} cover`}
+                  className="md:w-23 md:h-34.5"
+                  width={70}
+                  height={106}
+                  src={item.image}
+                />
 
-                <div className="grid content-start gap-1">
-                  <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-                    <span className="text-display-xs font-semibold text-neutral-950 lg:text-md">
+                <div className="flex flex-col items-start justify-center gap-1">
+                  <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2">
+                    <span className="text-sm font-bold text-neutral-950">
                       {item.category}
                     </span>
                   </div>
-                  <p className="display-sm font-semibold text-neutral-950 lg:display-xs">
+                  <p className="text-sm md:text-lg font-bold text-neutral-950">
                     {item.name}
                   </p>
-                  <p className="text-display-xs text-neutral-700 lg:text-xl">
+                  <p className="text-sm md:text-md font-medium text-neutral-700">
                     {item.author}
-                  </p>
-                  <p className="display-xs font-semibold text-neutral-950">
-                    {item.borrowDate}
-                    <span className="px-2 text-neutral-900">·</span>
-                    {item.duration}
                   </p>
                 </div>
               </div>
 
               <Button
-                className="h-12 rounded-full bg-primary-300 px-10 text-display-xs font-semibold text-neutral-25 hover:bg-primary-300/90 lg:h-10 lg:text-lg"
+                className="h-10 rounded-full bg-primary-300 px-10 text-md font-bold text-neutral-25 hover:bg-primary-300/90 "
                 onClick={() => setIsReviewDialogOpen(true)}
                 type="button"
               >
@@ -229,7 +234,7 @@ export function BorrowedListTabContent() {
 
       <div className="flex items-center justify-center">
         <Button
-          className="h-12 rounded-full border border-neutral-300 bg-neutral-25 px-12 text-display-xs font-semibold text-neutral-950 shadow-none hover:bg-neutral-100 lg:h-10 lg:text-lg"
+          className="h-10 md:h-12 md:w-50 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm  text-neutral-950 shadow-none hover:bg-neutral-100 md:text-md font-bold"
           variant="outline"
         >
           Load More
@@ -281,7 +286,11 @@ export function BorrowedListTabContent() {
                     <Image
                       alt=""
                       aria-hidden="true"
-                      className={isActive ? "h-10 w-10" : "h-10 w-10 grayscale opacity-50"}
+                      className={
+                        isActive
+                          ? "h-10 w-10"
+                          : "h-10 w-10 grayscale opacity-50"
+                      }
                       height={40}
                       src="/icon-star.svg"
                       width={40}

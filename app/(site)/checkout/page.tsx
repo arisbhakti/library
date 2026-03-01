@@ -104,7 +104,7 @@ export default function CheckoutPage() {
           </section>
         </section>
 
-        <aside className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-5 lg:h-fit">
+        <aside className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-5 lg:h-fit shadow-[0_0_20px_0_rgba(203,202,202,0.25)]">
           <h2 className="text-xl md:display-sm font-bold text-neutral-950 ">
             Complete Your Borrow Request
           </h2>

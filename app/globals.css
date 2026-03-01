@@ -121,6 +121,10 @@
   letter-spacing: -0.02em;
 }
 
+@utility shadow-card {
+  box-shadow: 0 0 20px 0 rgb(203 202 202 / 25%);
+}
+
 @utility display-xs {
   font-size: var(--text-display-xs);
   line-height: var(--text-display-xs--line-height);
