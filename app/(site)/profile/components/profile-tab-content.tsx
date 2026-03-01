@@ -3,11 +3,14 @@ import { Button } from "@/components/ui/button";
 
 export function ProfileTabContent() {
   return (
-    <section className="grid gap-4 w-full md:w-139.25">
+    <section className="grid gap-4 w-full md:w-139.25 ">
       <h1 className="display-xs md:display-sm font-extrabold text-neutral-950">
         Profile
       </h1>
-      <article className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 lg:p-5">
+      <article
+        className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 shadow-[0_0_20px_0_rgba(203,202,202,0.25)] lg:p-5"
+        id="card-profile"
+      >
         <Avatar className="size-16">
           <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
           <AvatarFallback>JD</AvatarFallback>
