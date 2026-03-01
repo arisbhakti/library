@@ -168,7 +168,7 @@ export function BorrowedListTabContent() {
       <div className="grid gap-4">
         {filteredBorrowedItems.map((item) => (
           <article
-            className="grid gap-3 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 shadow-card"
+            className="grid gap-3 rounded-3xl  p-4 shadow-card"
             key={item.id}
           >
             <div className="flex items-center justify-between gap-3">

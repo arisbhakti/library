@@ -133,8 +133,8 @@ export default function CartPage() {
             </div>
           </section>
 
-          <aside className="hidden lg:block w-79.5">
-            <div className="grid gap-6 rounded-3xl border border-neutral-200 bg-neutral-25 p-5">
+          <aside className="hidden lg:block w-79.5 ">
+            <div className="grid gap-6 rounded-3xl  p-5 shadow-card">
               <h2 className="text-xl font-bold text-neutral-950">
                 Loan Summary
               </h2>

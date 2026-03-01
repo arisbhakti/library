@@ -175,7 +175,7 @@ export default function DetailPage() {
           <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
             {reviewItems.map((review) => (
               <article
-                className="grid gap-2 rounded-2xl border border-neutral-200 bg-neutral-25 p-4"
+                className="grid gap-2 rounded-2xl  bg-neutral-white p-4 shadow-card"
                 key={review.id}
               >
                 <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ export default function DetailPage() {
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
             {relatedBooks.map((book) => (
               <article
-                className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
+                className="grid gap-0 overflow-hidden rounded-xl  shadow-card"
                 key={book.id}
               >
                 <Image

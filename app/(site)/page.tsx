@@ -37,7 +37,7 @@ export default function HomePage() {
         <div className="grid grid-cols-3 gap-3 lg:grid-cols-6 lg:gap-4">
           {categories.map((category) => (
             <article
-              className="grid gap-2 rounded-2xl border border-neutral-200 bg-neutral-25 p-2 lg:p-3"
+              className="grid gap-2 rounded-2xl  p-2 lg:p-3 shadow-card"
               key={category.name}
             >
               <div className="flex items-center justify-center rounded-xl bg-primary-50 p-[5.6px] md:p-[6.4px] ">
@@ -64,7 +64,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
           {recommendationItems.map((book) => (
             <article
-              className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
+              className="grid gap-0 overflow-hidden rounded-xl shadow-card "
               key={book.id}
             >
               <Image
@@ -115,7 +115,7 @@ export default function HomePage() {
         <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
           {popularAuthors.map((author) => (
             <article
-              className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-neutral-25 p-3 md:p-4 md:gap-4"
+              className="flex items-center gap-3 rounded-xl shadow-card p-3 md:p-4 md:gap-4"
               key={author.id}
             >
               <Avatar className="size-15 lg:size-20.25">

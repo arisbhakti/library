@@ -123,9 +123,9 @@ export default function CategoryPage() {
 
         <MobileFilterTrigger />
 
-        <div className="grid gap-4 lg:grid-cols-[266px_1fr] lg:gap-10">
-          <aside className="hidden lg:block">
-            <div className="grid gap-4 rounded-2xl border border-neutral-200 bg-neutral-25 p-4">
+        <div className="grid gap-4 lg:grid-cols-[266px_1fr] lg:gap-10 ">
+          <aside className="hidden lg:block ">
+            <div className="grid gap-4 rounded-2xl  p-4 shadow-card">
               <p className="text-sm md:text-md font-extrabold text-neutral-950">
                 FILTER
               </p>
@@ -137,7 +137,7 @@ export default function CategoryPage() {
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
               {books.map((book) => (
                 <article
-                  className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
+                  className="grid gap-0 overflow-hidden rounded-xl  shadow-card"
                   key={book.id}
                 >
                   <Image

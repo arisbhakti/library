@@ -8,7 +8,7 @@ export function ProfileTabContent() {
         Profile
       </h1>
       <article
-        className="shadow-card grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 lg:p-5"
+        className="shadow-card grid gap-4 rounded-3xl  p-4 lg:p-5"
         id="card-profile"
       >
         <Avatar className="size-16">

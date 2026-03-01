@@ -139,7 +139,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
 
   if (isAdminLibraryPage) {
     return (
-      <header className="border-b border-neutral-200 bg-neutral-25">
+      <header className="border-b border-neutral-200 bg-neutral-25 shadow-card">
         <div className="flex h-16 md:h-20 items-center justify-between px-4 lg:hidden">
           <MobileBrand />
           <DropdownMenu>
@@ -206,7 +206,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   }
 
   return (
-    <header className="border-b border-neutral-200 bg-neutral-25">
+    <header className="border-b border-neutral-200 bg-neutral-25 shadow-card">
       <div className="flex h-16 items-center px-4 lg:hidden">
         {isSearchOpen ? (
           <div className="flex w-full items-center gap-3">

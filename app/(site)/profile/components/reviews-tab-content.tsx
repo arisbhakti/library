@@ -59,7 +59,7 @@ export function ReviewsTabContent() {
       <div className="grid gap-4 lg:gap-5">
         {filteredReviewItems.map((item) => (
           <Card
-            className="gap-0 rounded-3xl border border-neutral-200 bg-neutral-25 py-4 shadow-card"
+            className="gap-0 rounded-3xl py-4 shadow-card border-none"
             key={item.id}
           >
             <CardContent className="grid gap-3 px-4 lg:gap-4 lg:px-4">

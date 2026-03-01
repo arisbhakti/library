@@ -11,7 +11,7 @@ const books = Array.from({ length: 8 }, (_, index) => ({
 export default function BookByAuthorPage() {
   return (
     <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
-      <section className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-3 md:p-4">
+      <section className="grid gap-3 rounded-2xl  bg-white p-3 md:p-4 shadow-card">
         <div className="flex items-center gap-3 md:gap-4">
           <Image
             alt="Author avatar"
@@ -47,7 +47,7 @@ export default function BookByAuthorPage() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
           {books.map((book) => (
             <article
-              className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
+              className="grid gap-0 overflow-hidden rounded-xl  shadow-card"
               key={book.id}
             >
               <Image
