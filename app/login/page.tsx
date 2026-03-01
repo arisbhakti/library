@@ -48,8 +48,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }`;
 
   return (
-    <main className="grid min-h-screen bg-neutral-100 px-6 py-20">
-      <section className="grid w-full max-w-md content-start gap-5 justify-self-center">
+    <main className="flex min-h-screen bg-neutral-100 px-6 py-20 items-center justify-center">
+      <section className="grid w-full max-w-100 content-start gap-5 justify-self-center">
         <div className="flex items-center gap-3">
           <Image
             alt="Booky logo"
@@ -64,8 +64,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <div className="grid gap-0.5 md:gap-2">
-          <h1 className="display-sm font-semibold text-neutral-950">Login</h1>
-          <p className="text-xl text-neutral-700">
+          <h1 className="display-xs md:display-sm font-bold text-neutral-950">
+            Login
+          </h1>
+          <p className="text-sm md:text-md font-semibold text-neutral-700">
             Sign in to manage your library account.
           </p>
         </div>
@@ -73,7 +75,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <form className="grid gap-4">
           <div className="grid gap-0.5">
             <label
-              className="text-sm font-bold text-neutral-950 leading-7"
+              className="text-sm font-bold text-neutral-950"
               htmlFor="email"
             >
               Email
@@ -92,7 +94,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <div className="grid gap-0.5">
             <label
-              className="text-sm font-semibold text-neutral-950"
+              className="text-sm font-bold text-neutral-950"
               htmlFor="password"
             >
               Password
@@ -119,14 +121,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           <button
-            className="h-12 rounded-full bg-primary-300 text-lg font-semibold text-neutral-25"
+            className="h-12 rounded-full bg-primary-300 text-md font-semibold text-neutral-25"
             type="submit"
           >
             Login
           </button>
         </form>
 
-        <p className="flex items-center justify-center gap-1 text-lg text-neutral-950">
+        <p className="flex items-center justify-center gap-1 text-sm md:text-md font-semibold text-neutral-950">
           <span>Don&apos;t have an account?</span>
           <Link className="font-semibold text-primary-300" href="/register">
             Register

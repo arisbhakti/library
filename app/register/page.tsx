@@ -36,7 +36,9 @@ function EyeIcon() {
   );
 }
 
-export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+export default async function RegisterPage({
+  searchParams,
+}: RegisterPageProps) {
   const params = await searchParams;
   const showError = params.error === "1";
 
@@ -48,9 +50,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   }`;
 
   return (
-    <main className="grid min-h-screen bg-neutral-100 px-6 py-20">
-      <section className="grid w-full max-w-md content-start gap-8 justify-self-center">
-        <div className="flex items-center gap-2">
+    <main className="flex min-h-screen bg-neutral-100 px-6 py-20 items-center justify-center">
+      <section className="grid w-full max-w-100 content-start gap-5 justify-self-center">
+        <div className="flex items-center gap-3">
           <Image
             alt="Booky logo"
             height={36}
@@ -58,27 +60,39 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             src="/booky-logo.svg"
             width={36}
           />
-          <span className="display-xs font-semibold text-neutral-950">Booky</span>
+          <span className="display-xs font-semibold text-neutral-950">
+            Booky
+          </span>
         </div>
 
-        <div className="grid gap-1">
-          <h1 className="display-sm font-semibold text-neutral-950">Register</h1>
-          <p className="text-xl text-neutral-700">
+        <div className="grid gap-0.5 md:gap-2">
+          <h1 className="display-xs md:display-sm font-bold text-neutral-950">
+            Register
+          </h1>
+          <p className="text-sm md:text-md font-semibold text-neutral-700">
             Create your account to start borrowing books.
           </p>
         </div>
 
         <form className="grid gap-4">
-          <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="name">
+          <div className="grid gap-0.5">
+            <label
+              className="text-sm font-bold text-neutral-950"
+              htmlFor="name"
+            >
               Name
             </label>
             <input className={fieldClass} id="name" name="name" type="text" />
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="email">
+            <label
+              className="text-sm font-bold text-neutral-950"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -88,30 +102,35 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
               name="email"
               type="email"
             />
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="phone">
+            <label
+              className="text-sm font-bold text-neutral-950"
+              htmlFor="phone"
+            >
               Nomor Handphone
             </label>
-            <input
-              className={fieldClass}
-              id="phone"
-              name="phone"
-              type="tel"
-            />
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            <input className={fieldClass} id="phone" name="phone" type="tel" />
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="password">
+            <label
+              className="text-sm font-bold text-neutral-950"
+              htmlFor="password"
+            >
               Password
             </label>
             <div className={passwordFieldClass}>
               <input
                 autoComplete="new-password"
-                className="h-full w-full bg-transparent text-md text-neutral-950 outline-none placeholder:text-neutral-500"
+                className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500"
                 id="password"
                 name="password"
                 type="password"
@@ -124,11 +143,16 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                 <EyeIcon />
               </button>
             </div>
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="confirm-password">
+            <label
+              className="text-sm font-bold text-neutral-950"
+              htmlFor="confirm-password"
+            >
               Confirm Password
             </label>
             <div className={passwordFieldClass}>
@@ -147,7 +171,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                 <EyeIcon />
               </button>
             </div>
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <button
@@ -158,7 +184,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           </button>
         </form>
 
-        <p className="flex items-center justify-center gap-1 text-lg text-neutral-950">
+        <p className="flex items-center justify-center gap-1 text-sm md:text-md font-semibold text-neutral-950">
           <span>Already have an account?</span>
           <Link className="font-semibold text-primary-300" href="/login">
             Log In

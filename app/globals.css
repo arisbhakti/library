@@ -91,6 +91,36 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+@utility text-xs {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  letter-spacing: -0.02em;
+}
+
+@utility text-sm {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  letter-spacing: -0.02em;
+}
+
+@utility text-md {
+  font-size: var(--text-md);
+  line-height: var(--text-md--line-height);
+  letter-spacing: -0.02em;
+}
+
+@utility text-lg {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg--line-height);
+  letter-spacing: -0.02em;
+}
+
+@utility text-xl {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl--line-height);
+  letter-spacing: -0.02em;
+}
+
 @utility display-xs {
   font-size: var(--text-display-xs);
   line-height: var(--text-display-xs--line-height);
