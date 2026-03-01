@@ -32,9 +32,9 @@ const relatedBooks = Array.from({ length: 5 }, (_, index) => ({
 export default function DetailPage() {
   return (
     <>
-      <main className="grid gap-8 px-4 pb-24 pt-4 lg:gap-10 lg:px-[120px] lg:pb-10 lg:pt-8">
+      <main className="grid gap-4 lg:gap-6px-4 pb-24 pt-4 lg:px-30 lg:pb-10 lg:pt-8 px-4">
         <Breadcrumb>
-          <BreadcrumbList className="gap-2 text-xs lg:text-sm">
+          <BreadcrumbList className="gap-1 text-xs lg:text-sm">
             <BreadcrumbItem>
               <BreadcrumbLink
                 asChild
@@ -61,23 +61,23 @@ export default function DetailPage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <section className="grid gap-5 lg:grid-cols-[auto_1fr] lg:gap-6">
+        <section className="grid gap-9 lg:grid-cols-[auto_1fr] ">
           <div className="grid justify-center">
             <div className="bg-neutral-200 p-[5.29px] lg:p-2">
               <Image
                 alt="The Psychology of Money"
-                className="h-auto w-[321px] max-w-full object-cover"
-                height={482}
+                className="md:w-[321px] md:h-[482px]  object-cover"
+                height={318}
                 priority
                 src="/dummy-header-detail.png"
-                width={321}
+                width={212}
               />
             </div>
           </div>
 
           <div className="grid content-start gap-4">
-            <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-              <span className="text-xs font-semibold text-neutral-950 lg:text-sm">
+            <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2 py-0">
+              <span className="text-sm font-bold text-neutral-950 lg:text-md">
                 Business & Economics
               </span>
             </div>
