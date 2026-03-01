@@ -49,8 +49,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main className="grid min-h-screen bg-neutral-100 px-6 py-20">
-      <section className="grid w-full max-w-md content-start gap-8 justify-self-center">
-        <div className="flex items-center gap-2">
+      <section className="grid w-full max-w-md content-start gap-5 justify-self-center">
+        <div className="flex items-center gap-3">
           <Image
             alt="Booky logo"
             height={36}
@@ -58,10 +58,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             src="/booky-logo.svg"
             width={36}
           />
-          <span className="display-xs font-semibold text-neutral-950">Booky</span>
+          <span className="display-xs font-semibold text-neutral-950">
+            Booky
+          </span>
         </div>
 
-        <div className="grid gap-1">
+        <div className="grid gap-0.5 md:gap-2">
           <h1 className="display-sm font-semibold text-neutral-950">Login</h1>
           <p className="text-xl text-neutral-700">
             Sign in to manage your library account.
@@ -69,8 +71,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <form className="grid gap-4">
-          <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="email">
+          <div className="grid gap-0.5">
+            <label
+              className="text-sm font-bold text-neutral-950 leading-7"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -80,11 +85,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               name="email"
               type="email"
             />
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
-          <div className="grid gap-1">
-            <label className="text-md font-semibold text-neutral-950" htmlFor="password">
+          <div className="grid gap-0.5">
+            <label
+              className="text-sm font-semibold text-neutral-950"
+              htmlFor="password"
+            >
               Password
             </label>
             <div className={passwordFieldClass}>
@@ -103,7 +113,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <EyeIcon />
               </button>
             </div>
-            {showError ? <p className="text-sm text-danger-300">Text Helper</p> : null}
+            {showError ? (
+              <p className="text-sm text-danger-300">Text Helper</p>
+            ) : null}
           </div>
 
           <button
