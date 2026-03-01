@@ -7,8 +7,8 @@ import { ReviewsTabContent } from "@/app/(site)/profile/components/reviews-tab-c
 
 export default function ProfilePage() {
   return (
-    <main className="grid gap-6 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
-      <section className="grid w-full gap-6 lg:max-w-[1120px]">
+    <main className="grid gap-6 px-4 py-4 lg:gap-8 lg:px-[220px] lg:py-8">
+      <section className="grid w-full gap-6 ">
         <Tabs className="w-full" defaultValue="profile">
           <TabsList className="h-14! w-full md:w-139.25! rounded-3xl bg-neutral-100 p-2   ">
             <TabsTrigger
