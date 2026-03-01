@@ -35,12 +35,20 @@ export function ReviewsTabContent() {
 
   return (
     <section className="grid gap-4">
-      <h1 className="display-md font-semibold text-neutral-950">Reviews</h1>
+      <h1 className="display-xs md:display-sm font-extrabold text-neutral-950">
+        Reviews
+      </h1>
 
-      <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
-        <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4 lg:w-[560px]">
+        <Image
+          alt=""
+          aria-hidden="true"
+          height={20}
+          src="/icon-search.svg"
+          width={20}
+        />
         <input
-          className="h-full w-full bg-transparent text-md text-neutral-950 outline-none placeholder:text-neutral-500 lg:text-sm"
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500 "
           onChange={(event) => setReviewSearchTerm(event.target.value)}
           placeholder="Search book"
           type="text"
@@ -51,37 +59,37 @@ export function ReviewsTabContent() {
       <div className="grid gap-4 lg:gap-5">
         {filteredReviewItems.map((item) => (
           <Card
-            className="gap-0 rounded-3xl border border-neutral-200 bg-neutral-25 py-4 shadow-none"
+            className="gap-0 rounded-3xl border border-neutral-200 bg-neutral-25 py-4 shadow-card"
             key={item.id}
           >
             <CardContent className="grid gap-3 px-4 lg:gap-4 lg:px-4">
-              <p className="text-md font-semibold text-neutral-950 lg:text-sm">
+              <p className="text-sm md:text-md font-semibold text-neutral-950 ">
                 {item.date}
               </p>
 
               <div className="h-px w-full bg-neutral-200" />
 
-              <div className="flex items-start gap-3">
-                <div className="relative aspect-[224/336] w-[84px] overflow-hidden rounded-md lg:w-[72px]">
-                  <Image
-                    alt={`${item.name} cover`}
-                    className="object-cover"
-                    fill
-                    sizes="84px"
-                    src={item.image}
-                  />
-                </div>
+              <div className="flex flex-row gap-3 md:gap-4">
+                <Image
+                  alt={`${item.name} cover`}
+                  className="md:w-23 md:h-34.5"
+                  width={70}
+                  height={106}
+                  src={item.image}
+                />
 
-                <div className="grid content-start gap-1">
-                  <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-                    <span className="text-md font-semibold text-neutral-950 lg:text-sm">
+                <div className="flex flex-col items-start justify-center gap-1">
+                  <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2">
+                    <span className="text-sm font-bold text-neutral-950">
                       {item.category}
                     </span>
                   </div>
-                  <p className="display-xs font-semibold text-neutral-950 lg:text-display-xs">
+                  <p className="text-sm md:text-lg font-bold text-neutral-950">
                     {item.name}
                   </p>
-                  <p className="text-xl text-neutral-700 lg:text-md">{item.author}</p>
+                  <p className="text-sm md:text-md font-medium text-neutral-700">
+                    {item.author}
+                  </p>
                 </div>
               </div>
 
@@ -93,14 +101,16 @@ export function ReviewsTabContent() {
                     <Image
                       alt=""
                       aria-hidden="true"
-                      height={20}
+                      height={24}
                       key={index}
                       src="/icon-star.svg"
-                      width={20}
+                      width={24}
                     />
                   ))}
                 </div>
-                <p className="text-display-xs text-neutral-950 lg:text-md">{item.review}</p>
+                <p className="text-sm md:text-md text-neutral-950 font-semibold">
+                  {item.review}
+                </p>
               </div>
             </CardContent>
           </Card>

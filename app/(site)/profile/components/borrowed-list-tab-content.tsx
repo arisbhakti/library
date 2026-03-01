@@ -243,11 +243,11 @@ export function BorrowedListTabContent() {
 
       <Dialog onOpenChange={handleReviewDialogChange} open={isReviewDialogOpen}>
         <DialogContent
-          className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 lg:max-w-[640px] lg:gap-5 lg:p-6"
+          className="grid gap-4 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 md:max-w-109.75 lg:gap-5 lg:p-6"
           showCloseButton={false}
         >
           <div className="flex items-center justify-between">
-            <DialogTitle className="display-xs font-semibold text-neutral-950">
+            <DialogTitle className="text-lg md:display-xs font-extrabold text-neutral-950">
               Give Review
             </DialogTitle>
             <DialogClose asChild>
@@ -268,17 +268,17 @@ export function BorrowedListTabContent() {
           </div>
 
           <div className="grid justify-items-center gap-2">
-            <p className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+            <p className="text-sm md:text-md font-bold text-neutral-950 ">
               Give Rating
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {Array.from({ length: 5 }).map((_, index) => {
                 const isActive = index < reviewRating;
 
                 return (
                   <button
                     aria-label={`Give ${index + 1} star rating`}
-                    className="flex size-12 items-center justify-center"
+                    className="flex size-10 md:size-12.25 items-center justify-center"
                     key={index}
                     onClick={() => setReviewRating(index + 1)}
                     type="button"
@@ -288,8 +288,8 @@ export function BorrowedListTabContent() {
                       aria-hidden="true"
                       className={
                         isActive
-                          ? "h-10 w-10"
-                          : "h-10 w-10 grayscale opacity-50"
+                          ? "h-10 w-10 md:h-12.25 md:w-12.25"
+                          : "h-10 w-10 md:h-12.25 md:w-12.25 grayscale opacity-50"
                       }
                       height={40}
                       src="/icon-star.svg"
@@ -302,14 +302,14 @@ export function BorrowedListTabContent() {
           </div>
 
           <textarea
-            className="h-[260px] w-full resize-none rounded-2xl border border-neutral-300 bg-neutral-25 p-4 text-display-xs text-neutral-950 outline-none placeholder:text-neutral-500"
+            className="h-[260px] w-full resize-none rounded-2xl border border-neutral-300 bg-neutral-25 p-4 text-sm md:text-md text-neutral-950 outline-none placeholder:text-neutral-500"
             onChange={(event) => setReviewText(event.target.value)}
             placeholder="Please share your thoughts about this book"
             value={reviewText}
           />
 
           <Button
-            className="h-12 rounded-full bg-primary-300 text-display-xs font-semibold text-neutral-25 hover:bg-primary-300/90"
+            className="h-10 md:h-12 rounded-full bg-primary-300 text-sm md:text-md font-bold text-neutral-25 hover:bg-primary-300/90"
             onClick={() => setIsReviewDialogOpen(false)}
             type="button"
           >
