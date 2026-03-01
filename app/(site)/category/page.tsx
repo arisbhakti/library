@@ -4,7 +4,12 @@ import { ListFilter, Star, X } from "lucide-react";
 import Image from "next/image";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sidebar, SidebarContent, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarProvider,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -31,7 +36,9 @@ function FilterFields() {
   return (
     <div className="grid gap-4">
       <div className="grid gap-3">
-        <p className="display-xs font-semibold text-neutral-950">Category</p>
+        <p className="text-md md:text-lg font-extrabold text-neutral-950">
+          Category
+        </p>
         <div className="grid gap-2">
           {categoryFilters.map((item) => (
             <label className="flex items-center gap-2" key={item.label}>
@@ -39,20 +46,20 @@ function FilterFields() {
                 className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
                 defaultChecked={item.checked}
               />
-              <span className="text-xl text-neutral-900">{item.label}</span>
+              <span className="text-md text-neutral-900">{item.label}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div className="grid gap-3 border-t border-neutral-200 pt-4">
-        <p className="display-xs font-semibold text-neutral-950">Rating</p>
+        <p className="text-lg font-extrabold text-neutral-950">Rating</p>
         <div className="grid gap-2">
           {ratingFilters.map((rating) => (
             <label className="flex items-center gap-2" key={rating}>
               <Checkbox className="border-neutral-300" />
               <Star className="h-4 w-4 fill-[#FFAB0D] text-[#FFAB0D]" />
-              <span className="text-xl text-neutral-900">{rating}</span>
+              <span className="text-md text-neutral-900">{rating}</span>
             </label>
           ))}
         </div>
@@ -70,7 +77,7 @@ function MobileFilterTrigger() {
       onClick={toggleSidebar}
       type="button"
     >
-      <span className="display-xs font-semibold text-neutral-950">FILTER</span>
+      <span className="text-sm font-extrabold text-neutral-950">FILTER</span>
       <ListFilter className="h-5 w-5 text-neutral-900" />
     </button>
   );
@@ -89,7 +96,7 @@ function MobileFilterSidebar() {
       <SidebarContent className="bg-neutral-25 p-4">
         <div className="grid gap-4">
           <div className="flex items-center justify-between">
-            <p className="display-xs font-semibold text-neutral-950">FILTER</p>
+            <p className="text-md font-extrabold text-neutral-950">FILTER</p>
             <button
               aria-label="Close filter"
               className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300"
@@ -110,42 +117,54 @@ export default function CategoryPage() {
   return (
     <SidebarProvider className="!block bg-neutral-100">
       <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
-        <h1 className="display-md font-semibold text-neutral-950">Book List</h1>
+        <h1 className="display-xs md:display-lg font-bold text-neutral-950">
+          Book List
+        </h1>
 
         <MobileFilterTrigger />
 
-        <div className="grid gap-4 lg:grid-cols-[280px_1fr] lg:gap-10">
+        <div className="grid gap-4 lg:grid-cols-[266px_1fr] lg:gap-10">
           <aside className="hidden lg:block">
             <div className="grid gap-4 rounded-2xl border border-neutral-200 bg-neutral-25 p-4">
-              <p className="display-xs font-semibold text-neutral-950">FILTER</p>
+              <p className="text-sm md:text-md font-extrabold text-neutral-950">
+                FILTER
+              </p>
               <FilterFields />
             </div>
           </aside>
 
           <section className="grid gap-3 lg:gap-4">
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
               {books.map((book) => (
                 <article
-                  className={cn(
-                    "grid gap-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-25"
-                  )}
+                  className="grid gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-25"
                   key={book.id}
                 >
-                  <div className="relative aspect-[224/336] w-full overflow-hidden rounded-t-2xl rounded-b-none">
-                    <Image
-                      alt={`${book.name} cover`}
-                      className="object-cover"
-                      fill
-                      sizes="(min-width: 1024px) calc((100vw - 568px) / 4), calc((100vw - 44px) / 2)"
-                      src={book.image}
-                    />
-                  </div>
-                  <div className="grid gap-0 p-3">
-                    <p className="text-sm font-semibold text-neutral-950 lg:text-md">{book.name}</p>
-                    <p className="text-xs text-neutral-500 lg:text-sm">{book.author}</p>
-                    <div className="flex items-center gap-1">
-                      <Image alt="" aria-hidden="true" height={16} src="/icon-star.svg" width={16} />
-                      <span className="text-xs text-neutral-700 lg:text-sm">{book.rating}</span>
+                  <Image
+                    alt={`${book.name} cover`}
+                    className="w-full object-cover md:h-84!"
+                    height={258}
+                    width={258}
+                    src={book.image}
+                  />
+                  <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                    <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                      {book.name}
+                    </p>
+                    <p className="text-sm text-neutral-700 lg:text-md">
+                      {book.author}
+                    </p>
+                    <div className="flex items-center gap-1 justi">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        height={24}
+                        src="/icon-star.svg"
+                        width={24}
+                      />
+                      <span className="text-sm text-neutral-700 lg:text-md font-semibold">
+                        {book.rating}
+                      </span>
                     </div>
                   </div>
                 </article>

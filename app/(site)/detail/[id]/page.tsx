@@ -101,7 +101,7 @@ export default function DetailPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 md:w-[386px]">
+            <div className="grid grid-cols-3 gap-3 md:w-96.5">
               <div className="grid gap-0">
                 <p className="text-lg md:display-xs font-bold text-neutral-950">
                   320
