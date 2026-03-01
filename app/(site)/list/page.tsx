@@ -14,7 +14,9 @@ export default function ListPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const resolvedTab: ListTab =
-    tabParam === "borrowed-list" || tabParam === "book-list" || tabParam === "user"
+    tabParam === "borrowed-list" ||
+    tabParam === "book-list" ||
+    tabParam === "user"
       ? tabParam
       : "user";
   const [activeTab, setActiveTab] = useState<ListTab>(resolvedTab);
@@ -49,21 +51,21 @@ export default function ListPage() {
           onValueChange={(value) => setActiveTab(value as ListTab)}
           value={activeTab}
         >
-          <TabsList className="h-14 w-full min-w-0 rounded-3xl bg-neutral-200 p-1 lg:h-[74px] lg:w-[560px] lg:rounded-3xl lg:p-2">
+          <TabsList className="h-14! w-full md:w-139.25! rounded-3xl bg-neutral-100 p-2 ">
             <TabsTrigger
-              className="h-full min-w-0 rounded-2xl px-2 text-md font-medium leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:text-xl"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="borrowed-list"
             >
               Borrowed List
             </TabsTrigger>
             <TabsTrigger
-              className="h-full min-w-0 rounded-2xl px-2 text-md font-semibold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:text-xl"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="user"
             >
               User
             </TabsTrigger>
             <TabsTrigger
-              className="h-full min-w-0 rounded-2xl px-2 text-md font-medium leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:text-xl"
+              className="h-10! rounded-2xl text-sm font-bold leading-none text-neutral-600 data-[state=active]:bg-neutral-25 data-[state=active]:text-neutral-950 data-[state=active]:shadow-none lg:h-14 lg:text-md"
               value="book-list"
             >
               Book List

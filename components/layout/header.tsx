@@ -143,7 +143,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
 
   if (isAdminLibraryPage) {
     return (
-      <header className=" shadow-card bg-white">
+      <header className="fixed top-0 z-50 w-full bg-white shadow-card">
         <div className="flex h-16 md:h-20 items-center justify-between px-4 lg:hidden">
           <MobileBrand />
           <DropdownMenu>

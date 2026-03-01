@@ -103,16 +103,22 @@ export function UserTabContent() {
 
   return (
     <section className="grid gap-4 lg:gap-6">
-      <h1 className="text-display-xs font-semibold text-neutral-950 lg:display-sm">
+      <h1 className="text-display-xs md:text-display-sm font-bold text-neutral-950 lg:display-sm">
         User
       </h1>
 
-      <label className="flex h-14 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
-        <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4 lg:w-[560px]">
+        <Image
+          alt=""
+          aria-hidden="true"
+          height={20}
+          src="/icon-search.svg"
+          width={20}
+        />
         <input
-          className="h-full w-full bg-transparent text-md text-neutral-950 outline-none placeholder:text-neutral-500 lg:text-md"
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500 "
           onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search user"
+          placeholder="Search book"
           type="text"
           value={searchTerm}
         />
@@ -127,32 +133,46 @@ export function UserTabContent() {
           <div className="grid gap-4 lg:hidden">
             {mobileUsers.map((user) => (
               <article
-                className="grid gap-1 rounded-3xl border border-neutral-200 bg-neutral-25 p-4"
+                className="grid gap-1 rounded-2xl border box-border border-neutral-300 p-4 shadow-card"
                 key={user.id}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-md text-neutral-950">No</span>
-                  <span className="text-md font-semibold text-neutral-950">{user.id}</span>
+                  <span className="text-sm text-neutral-950 font-semibold">
+                    No
+                  </span>
+                  <span className="text-sm font-semibold text-neutral-950">
+                    {user.id}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-md text-neutral-950">Name</span>
-                  <span className="text-md font-semibold text-neutral-950">{user.name}</span>
+                  <span className="text-sm text-neutral-950 font-semibold">
+                    Name
+                  </span>
+                  <span className="text-sm font-semibold text-neutral-950">
+                    {user.name}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-md text-neutral-950">Email</span>
-                  <span className="max-w-[65%] break-all text-right text-md font-semibold text-neutral-950">
+                  <span className="text-sm text-neutral-950 font-semibold">
+                    Email
+                  </span>
+                  <span className="max-w-[65%] break-all text-right text-sm font-bold text-neutral-950">
                     {user.email}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-md text-neutral-950">Nomor Handphone</span>
-                  <span className="max-w-[65%] break-all text-right text-md font-semibold text-neutral-950">
+                  <span className="text-sm text-neutral-950 font-semibold">
+                    Nomor Handphone
+                  </span>
+                  <span className="max-w-[65%] break-all text-right text-sm font-bold text-neutral-950">
                     {user.phone}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-md text-neutral-950">Created at</span>
-                  <span className="max-w-[65%] text-right text-md font-semibold text-neutral-950">
+                  <span className="text-sm text-neutral-950 font-semibold">
+                    Created at
+                  </span>
+                  <span className="max-w-[65%] text-right text-sm font-bold text-neutral-950">
                     {user.createdAt}
                   </span>
                 </div>
@@ -160,38 +180,67 @@ export function UserTabContent() {
             ))}
           </div>
 
-          <div className="hidden rounded-3xl border border-neutral-300 bg-neutral-25 p-3 lg:grid lg:gap-3">
+          <div className="hidden rounded-3xl border border-neutral-300 bg-white p-3 md:grid md:gap-3">
             <table className="w-full border-collapse">
-              <thead className="bg-neutral-100">
+              <thead className="bg-neutral-50">
                 <tr>
-                  <th className="px-3 py-3 text-left text-md font-semibold text-neutral-950">No</th>
-                  <th className="px-3 py-3 text-left text-md font-semibold text-neutral-950">Name</th>
-                  <th className="px-3 py-3 text-left text-md font-semibold text-neutral-950">Nomor Handphone</th>
-                  <th className="px-3 py-3 text-left text-md font-semibold text-neutral-950">Email</th>
-                  <th className="px-3 py-3 text-left text-md font-semibold text-neutral-950">Created at</th>
+                  <th className="px-3 py-3 text-left text-sm font-bold text-neutral-950">
+                    No
+                  </th>
+                  <th className="px-3 py-3 text-left text-sm font-bold text-neutral-950">
+                    Name
+                  </th>
+                  <th className="px-3 py-3 text-left text-sm font-bold text-neutral-950">
+                    Nomor Handphone
+                  </th>
+                  <th className="px-3 py-3 text-left text-sm font-bold text-neutral-950">
+                    Email
+                  </th>
+                  <th className="px-3 py-3 text-left text-sm font-bold text-neutral-950">
+                    Created at
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
                   <tr className="border-b border-neutral-200" key={user.id}>
-                    <td className="px-3 py-4 text-md text-neutral-950">{user.id}</td>
-                    <td className="px-3 py-4 text-md text-neutral-950">{user.name}</td>
-                    <td className="px-3 py-4 text-md text-neutral-950">{user.phone}</td>
-                    <td className="px-3 py-4 text-md text-neutral-950">{user.email}</td>
-                    <td className="px-3 py-4 text-md text-neutral-950">{user.createdAt}</td>
+                    <td className="px-3 py-4 text-md text-neutral-950 font-semibold">
+                      {user.id}
+                    </td>
+                    <td className="px-3 py-4 text-md text-neutral-950 font-semibold">
+                      {user.name}
+                    </td>
+                    <td className="px-3 py-4 text-md text-neutral-950 font-semibold">
+                      {user.phone}
+                    </td>
+                    <td className="px-3 py-4 text-md text-neutral-950 font-semibold">
+                      {user.email}
+                    </td>
+                    <td className="px-3 py-4 text-md text-neutral-950 font-semibold">
+                      {user.createdAt}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             <div className="flex items-center justify-between gap-3 px-2">
-              <p className="text-md text-neutral-950">Showing 1 to 10 of 60 entries</p>
-              <Pagination currentPage={currentPage} onPageChange={setCurrentPage} />
+              <p className="text-md text-neutral-950 font-medium">
+                Showing 1 to 10 of 60 entries
+              </p>
+              <Pagination
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </div>
 
           <div className="flex w-full items-center justify-center overflow-x-hidden lg:hidden">
-            <Pagination currentPage={currentPage} mobile onPageChange={setCurrentPage} />
+            <Pagination
+              currentPage={currentPage}
+              mobile
+              onPageChange={setCurrentPage}
+            />
           </div>
         </>
       )}
