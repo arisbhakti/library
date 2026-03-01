@@ -166,7 +166,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
             >
               <DropdownMenuItem
                 asChild
-                className="h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
+                className="h-11 cursor-pointer rounded-xl px-3 text-md font-semibold text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
               >
                 <Link href="/login">Logout</Link>
               </DropdownMenuItem>
@@ -197,7 +197,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               >
                 <DropdownMenuItem
                   asChild
-                  className="h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
+                  className="h-11 cursor-pointer rounded-xl px-3 text-md font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
                 >
                   <Link href="/login">Logout</Link>
                 </DropdownMenuItem>

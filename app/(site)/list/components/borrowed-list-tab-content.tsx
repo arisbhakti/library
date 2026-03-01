@@ -104,15 +104,21 @@ export function BorrowedListTabContent() {
   }, [activeFilter, searchTerm]);
 
   return (
-    <section className="grid gap-4 lg:gap-6">
-      <h1 className="text-display-xs font-semibold text-neutral-950 lg:display-sm">
+    <section className="grid gap-4 md:gap-6">
+      <h1 className="display-xs md:display-sm font-bold text-neutral-950">
         Borrowed List
       </h1>
 
-      <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
-        <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300 px-4 lg:w-[560px]">
+        <Image
+          alt=""
+          aria-hidden="true"
+          height={20}
+          src="/icon-search.svg"
+          width={20}
+        />
         <input
-          className="h-full w-full bg-transparent text-md text-neutral-950 outline-none placeholder:text-neutral-500"
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500"
           onChange={(event) => setSearchTerm(event.target.value)}
           placeholder="Search"
           type="text"
@@ -128,8 +134,8 @@ export function BorrowedListTabContent() {
             <Button
               className={
                 isActive
-                  ? "h-10 rounded-full border border-primary-300 bg-neutral-25 px-4 text-md font-semibold text-primary-300 shadow-none hover:bg-neutral-25"
-                  : "h-10 rounded-full border border-neutral-300 bg-neutral-25 px-4 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+                  ? "h-10 rounded-full border border-primary-300 bg-neutral-25 px-5 text-sm md:text-md font-bold text-primary-300 shadow-none hover:bg-neutral-25"
+                  : "h-10 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-sm md:text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
               }
               key={filter.value}
               onClick={() => setActiveFilter(filter.value)}
@@ -143,27 +149,24 @@ export function BorrowedListTabContent() {
 
       <div className="grid gap-4">
         {filteredItems.map((item) => (
-          <article
-            className="grid gap-3 rounded-3xl border border-neutral-200 bg-neutral-25 p-4"
-            key={item.id}
-          >
+          <article className="grid gap-3 rounded-3xl p-4 shadow-card" key={item.id}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                <span className="text-sm md:text-md font-bold text-neutral-950">
                   Status
                 </span>
                 <span
-                  className={`rounded-md px-2 py-1 text-md font-semibold ${statusStyles[item.status]}`}
+                  className={`rounded-lg px-2 py-1 text-sm font-bold ${statusStyles[item.status]}`}
                 >
                   {statusLabels[item.status]}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                <span className="text-sm md:text-md font-bold text-neutral-950">
                   Due Date
                 </span>
-                <span className="rounded-md bg-[#FFEAF0] px-2 py-1 text-md font-semibold text-danger-300">
+                <span className="rounded-lg bg-[#FFEAF0] px-2 py-1 text-sm font-bold text-danger-300">
                   {item.dueDate}
                 </span>
               </div>
@@ -173,28 +176,28 @@ export function BorrowedListTabContent() {
 
             <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
               <div className="grid gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="relative h-[160px] w-[106px] overflow-hidden rounded-sm bg-neutral-100 lg:h-[124px] lg:w-[84px]">
-                    <Image
-                      alt={`${item.bookName} cover`}
-                      className="object-cover"
-                      fill
-                      sizes="106px"
-                      src={item.image}
-                    />
-                  </div>
+                <div className="flex flex-row gap-3 md:gap-4">
+                  <Image
+                    alt={`${item.bookName} cover`}
+                    className="h-[106px] w-[70px] md:h-34.5 md:w-23"
+                    height={106}
+                    src={item.image}
+                    width={70}
+                  />
 
-                  <div className="grid content-start gap-1">
-                    <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-                      <span className="text-display-xs font-semibold text-neutral-950 lg:text-sm">
+                  <div className="flex flex-col items-start justify-center gap-1">
+                    <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2">
+                      <span className="text-sm font-bold text-neutral-950">
                         {item.category}
                       </span>
                     </div>
-                    <p className="text-display-xs font-semibold text-neutral-950">
+                    <p className="text-sm md:text-lg font-bold text-neutral-950">
                       {item.bookName}
                     </p>
-                    <p className="text-xl text-neutral-700">{item.authorName}</p>
-                    <p className="text-display-xs font-semibold text-neutral-950 lg:text-xl">
+                    <p className="text-sm md:text-md font-medium text-neutral-700">
+                      {item.authorName}
+                    </p>
+                    <p className="text-sm md:text-lg font-bold text-neutral-950">
                       {item.borrowDate}
                       <span className="px-2 text-neutral-900">·</span>
                       {item.duration}
@@ -205,16 +208,16 @@ export function BorrowedListTabContent() {
                 <div className="h-px w-full bg-neutral-200 lg:hidden" />
 
                 <div className="grid gap-0 lg:hidden">
-                  <p className="text-display-xs text-neutral-950">borrower&apos;s name</p>
-                  <p className="text-display-xs font-semibold text-neutral-950">
+                  <p className="text-sm text-neutral-950">borrower&apos;s name</p>
+                  <p className="text-lg font-bold text-neutral-950">
                     {item.borrowerName}
                   </p>
                 </div>
               </div>
 
               <div className="hidden justify-items-end gap-0 lg:grid">
-                <p className="text-display-xs text-neutral-950">borrower&apos;s name</p>
-                <p className="text-display-xs font-semibold text-neutral-950">
+                <p className="text-md text-neutral-950">borrower&apos;s name</p>
+                <p className="display-xs font-bold text-neutral-950">
                   {item.borrowerName}
                 </p>
               </div>

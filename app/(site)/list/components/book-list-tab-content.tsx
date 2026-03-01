@@ -99,8 +99,8 @@ export function BookListTabContent() {
   }, [activeFilter, searchTerm]);
 
   return (
-    <section className="grid gap-4 lg:gap-6">
-      <h1 className="text-display-xs font-semibold text-neutral-950 lg:display-sm">
+    <section className="grid gap-4 lg:gap-6 mt-3">
+      <h1 className="text-display-sm font-extrabold text-neutral-950 ">
         Book List
       </h1>
 
@@ -111,10 +111,16 @@ export function BookListTabContent() {
         <Link href="/book">Add Book</Link>
       </Button>
 
-      <label className="flex h-12 w-full items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 lg:w-[560px]">
-        <Image alt="" aria-hidden="true" height={20} src="/icon-search.svg" width={20} />
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4 lg:w-[560px]">
+        <Image
+          alt=""
+          aria-hidden="true"
+          height={20}
+          src="/icon-search.svg"
+          width={20}
+        />
         <input
-          className="h-full w-full bg-transparent text-md text-neutral-950 outline-none placeholder:text-neutral-500"
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500 "
           onChange={(event) => setSearchTerm(event.target.value)}
           placeholder="Search book"
           type="text"
@@ -130,7 +136,7 @@ export function BookListTabContent() {
             <Button
               className={
                 isActive
-                  ? "h-10 rounded-full border border-primary-300 bg-neutral-25 px-4 text-md font-semibold text-primary-300 shadow-none hover:bg-neutral-25"
+                  ? "h-10 rounded-full border border-primary-300 bg-neutral-25 px-4 text-md font-bold text-primary-300 shadow-none hover:bg-neutral-25"
                   : "h-10 rounded-full border border-neutral-300 bg-neutral-25 px-4 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
               }
               key={filter.value}
@@ -146,39 +152,37 @@ export function BookListTabContent() {
       <div className="grid gap-3 lg:gap-4">
         {filteredBooks.map((book) => (
           <article
-            className="grid min-w-0 gap-3 rounded-3xl border border-neutral-200 bg-neutral-25 p-4 lg:grid-cols-[1fr_auto] lg:items-center"
+            className="grid min-w-0 gap-3 rounded-3xl shadow-card p-4 lg:grid-cols-[1fr_auto] lg:items-center"
             key={book.id}
           >
             <div className="flex min-w-0 items-start gap-3">
-              <div className="relative h-[124px] w-[84px] overflow-hidden rounded-sm bg-neutral-100">
-                <Image
-                  alt={`${book.name} cover`}
-                  className="object-cover"
-                  fill
-                  sizes="84px"
-                  src={book.image}
-                />
-              </div>
+              <Image
+                alt={`${book.name} cover`}
+                className="md:w-23 md:h-34.5"
+                width={70}
+                height={106}
+                src={book.image}
+              />
 
-              <div className="grid min-w-0 content-start gap-0">
-                <div className="inline-flex w-fit items-center rounded-xl border border-neutral-300 px-3 py-1">
-                  <span className="text-sm font-semibold text-neutral-950">
+              <div className="grid min-w-0 content-start gap-1">
+                <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2 py-0">
+                  <span className="text-sm font-bold text-neutral-950">
                     {book.category}
                   </span>
                 </div>
-                <p className="text-display-xs font-semibold text-neutral-950 lg:text-display-xs">
+                <p className="text-lg font-bold text-neutral-950 ">
                   {book.name}
                 </p>
-                <p className="text-xl text-neutral-700">{book.author}</p>
+                <p className="text-md text-neutral-700">{book.author}</p>
                 <div className="flex items-center gap-1">
                   <Image
                     alt=""
                     aria-hidden="true"
-                    height={20}
+                    height={24}
                     src="/icon-star.svg"
-                    width={20}
+                    width={24}
                   />
-                  <span className="text-xl font-semibold text-neutral-950">
+                  <span className="text-md font-bold text-neutral-950">
                     {book.rating}
                   </span>
                 </div>
@@ -188,20 +192,20 @@ export function BookListTabContent() {
             <div className="grid w-full grid-cols-3 gap-2 lg:flex lg:w-auto lg:items-center">
               <Button
                 asChild
-                className="h-11 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
+                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
                 variant="outline"
               >
                 <Link href={`/preview/${book.id}`}>Preview</Link>
               </Button>
               <Button
                 asChild
-                className="h-11 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
+                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
                 variant="outline"
               >
                 <Link href={`/book/${book.id}`}>Edit</Link>
               </Button>
               <Button
-                className="h-11 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-semibold text-danger-300 shadow-none hover:bg-danger-300/10 lg:w-[96px]"
+                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-danger-300 shadow-none hover:bg-danger-300/10 lg:w-[96px]"
                 onClick={() => setDeleteTarget(book)}
                 variant="outline"
               >
