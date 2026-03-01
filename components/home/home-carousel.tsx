@@ -28,7 +28,7 @@ export function HomeCarousel() {
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div className="relative aspect-[1200/441] min-w-full" key={slide.id}>
+            <div className="relative aspect-1200/441 min-w-full" key={slide.id}>
               <Image
                 alt={slide.alt}
                 className="object-cover"
