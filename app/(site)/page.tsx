@@ -287,8 +287,11 @@ export default function HomePage() {
           <>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
               {recommendationItems.map((book) => (
-                <Link href={`/detail/${book.id}`} key={book.id}>
-                  <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
+                <article
+                  className="grid gap-0 overflow-hidden rounded-xl shadow-card"
+                  key={book.id}
+                >
+                  <Link href={`/detail/${book.id}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt={`${book.title} cover`}
@@ -303,28 +306,39 @@ export default function HomePage() {
                       }}
                       src={getBookCoverSource(book.coverImage)}
                     />
-                    <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                  </Link>
+                  <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                    <Link href={`/detail/${book.id}`}>
                       <p className="text-sm font-bold text-neutral-950 lg:text-lg">
                         {book.title}
                       </p>
+                    </Link>
+                    {book.authorId > 0 ? (
+                      <Link
+                        className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
+                        href={`/book-by-author/${book.authorId}`}
+                      >
+                        {book.author?.name || "Unknown author"}
+                      </Link>
+                    ) : (
                       <p className="text-sm text-neutral-700 lg:text-md">
                         {book.author?.name || "Unknown author"}
                       </p>
-                      <div className="flex items-center gap-1">
-                        <Image
-                          alt=""
-                          aria-hidden="true"
-                          height={24}
-                          src="/icon-star.svg"
-                          width={24}
-                        />
-                        <span className="text-sm font-semibold text-neutral-700 lg:text-md">
-                          {formatRating(book.rating)}
-                        </span>
-                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        height={24}
+                        src="/icon-star.svg"
+                        width={24}
+                      />
+                      <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                        {formatRating(book.rating)}
+                      </span>
                     </div>
-                  </article>
-                </Link>
+                  </div>
+                </article>
               ))}
             </div>
 
@@ -379,33 +393,32 @@ export default function HomePage() {
           <>
             <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
               {popularAuthors.map((author) => (
-                <article
-                  className="flex items-center gap-3 rounded-xl p-3 shadow-card md:gap-4 md:p-4"
-                  key={author.id}
-                >
-                  <Avatar className="size-15 lg:size-20.25">
-                    <AvatarImage alt={author.name} src={DEFAULT_AUTHOR_AVATAR} />
-                    <AvatarFallback>{getAuthorFallback(author.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="grid gap-0.5">
-                    <p className="text-md font-bold text-neutral-950 md:text-lg">
-                      {author.name}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <Image
-                        alt=""
-                        aria-hidden="true"
-                        height={24}
-                        src="/blue-book-with-white-pin.svg"
-                        width={24}
-                      />
-                      <span className="text-sm text-neutral-950 md:text-md">
-                        {author.bookCount}{" "}
-                        {author.bookCount === 1 ? "book" : "books"}
-                      </span>
+                <Link href={`/book-by-author/${author.id}`} key={author.id}>
+                  <article className="flex items-center gap-3 rounded-xl p-3 shadow-card transition-colors hover:bg-neutral-50 md:gap-4 md:p-4">
+                    <Avatar className="size-15 lg:size-20.25">
+                      <AvatarImage alt={author.name} src={DEFAULT_AUTHOR_AVATAR} />
+                      <AvatarFallback>{getAuthorFallback(author.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-0.5">
+                      <p className="text-md font-bold text-neutral-950 md:text-lg">
+                        {author.name}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Image
+                          alt=""
+                          aria-hidden="true"
+                          height={24}
+                          src="/blue-book-with-white-pin.svg"
+                          width={24}
+                        />
+                        <span className="text-sm text-neutral-950 md:text-md">
+                          {author.bookCount}{" "}
+                          {author.bookCount === 1 ? "book" : "books"}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </Link>
               ))}
             </div>
 

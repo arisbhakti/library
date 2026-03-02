@@ -105,6 +105,13 @@ export type PopularAuthorsData = {
   authors: PopularAuthor[];
 };
 
+export type AuthorBooksData = {
+  author: BookDetailAuthor | null;
+  bookCount: number;
+  books: RecommendationBook[];
+  pagination: RecommendationPagination;
+};
+
 export type Category = {
   id: number;
   name: string;
@@ -126,6 +133,12 @@ type PopularAuthorsResponse = {
   success: boolean;
   message: string;
   data: PopularAuthorsData;
+};
+
+type AuthorBooksResponse = {
+  success: boolean;
+  message: string;
+  data: AuthorBooksData;
 };
 
 type CategoriesResponse = {
@@ -165,6 +178,12 @@ type FetchBooksPageParams = {
   limit: number;
 };
 
+type FetchAuthorBooksPageParams = {
+  authorId: number;
+  page: number;
+  limit: number;
+};
+
 export const tanstackQueryKeys = {
   books: {
     all: ["books"] as const,
@@ -184,6 +203,11 @@ export const tanstackQueryKeys = {
     all: ["popular-authors"] as const,
     list: (params: { limit: number }) =>
       [...tanstackQueryKeys.popularAuthors.all, params] as const,
+  },
+  authorBooks: {
+    all: ["author-books"] as const,
+    list: (params: { authorId: number; limit: number }) =>
+      [...tanstackQueryKeys.authorBooks.all, params] as const,
   },
   categories: {
     all: ["categories"] as const,
@@ -230,6 +254,30 @@ export async function fetchBooksPage(
   return response.data.data;
 }
 
+export async function fetchAuthorBooksPage(
+  params: FetchAuthorBooksPageParams,
+  signal?: AbortSignal,
+): Promise<AuthorBooksData> {
+  const { authorId, page, limit } = params;
+
+  const response = await tanstackApiClient.get<AuthorBooksResponse>(
+    `/authors/${authorId}/books`,
+    {
+      params: {
+        page,
+        limit,
+      },
+      signal,
+    },
+  );
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Gagal memuat buku author.");
+  }
+
+  return response.data.data;
+}
+
 type UseBooksInfiniteQueryParams = {
   q?: string;
   categoryId?: number;
@@ -269,6 +317,57 @@ export function useBooksInfiniteQuery({
       );
     },
     enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+  });
+}
+
+type UseAuthorBooksInfiniteQueryParams = {
+  authorId: number | null;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useAuthorBooksInfiniteQuery({
+  authorId,
+  limit = 8,
+  enabled = true,
+}: UseAuthorBooksInfiniteQueryParams) {
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.authorBooks.list({
+      authorId: authorId ?? 0,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      if (!authorId || authorId <= 0) {
+        throw new Error("ID author tidak valid.");
+      }
+
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchAuthorBooksPage(
+        {
+          authorId,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled:
+      enabled &&
+      typeof authorId === "number" &&
+      Number.isFinite(authorId) &&
+      authorId > 0,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const {

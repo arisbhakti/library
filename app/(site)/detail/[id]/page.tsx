@@ -303,7 +303,16 @@ export default function DetailPage() {
                   <h1 className="display-xs font-bold text-neutral-950 lg:display-sm">
                     {book.title}
                   </h1>
-                  <p className="text-sm text-neutral-700 md:text-md">{authorName}</p>
+                  {book.authorId > 0 ? (
+                    <Link
+                      className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 md:text-md"
+                      href={`/book-by-author/${book.authorId}`}
+                    >
+                      {authorName}
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-neutral-700 md:text-md">{authorName}</p>
+                  )}
                   <div className="flex items-center gap-1">
                     <Image
                       alt=""
@@ -487,8 +496,11 @@ export default function DetailPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
                     {relatedBooks.map((relatedBook) => (
-                      <Link href={`/detail/${relatedBook.id}`} key={relatedBook.id}>
-                        <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
+                      <article
+                        className="grid gap-0 overflow-hidden rounded-xl shadow-card"
+                        key={relatedBook.id}
+                      >
+                        <Link href={`/detail/${relatedBook.id}`}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             alt={`${relatedBook.title} cover`}
@@ -503,28 +515,39 @@ export default function DetailPage() {
                             }}
                             src={getBookCoverSource(relatedBook.coverImage)}
                           />
-                          <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                        </Link>
+                        <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                          <Link href={`/detail/${relatedBook.id}`}>
                             <p className="text-sm font-bold text-neutral-950 lg:text-lg">
                               {relatedBook.title}
                             </p>
+                          </Link>
+                          {relatedBook.authorId > 0 ? (
+                            <Link
+                              className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
+                              href={`/book-by-author/${relatedBook.authorId}`}
+                            >
+                              {relatedBook.author?.name || "Unknown author"}
+                            </Link>
+                          ) : (
                             <p className="text-sm text-neutral-700 lg:text-md">
                               {relatedBook.author?.name || "Unknown author"}
                             </p>
-                            <div className="flex items-center gap-1">
-                              <Image
-                                alt=""
-                                aria-hidden="true"
-                                height={24}
-                                src="/icon-star.svg"
-                                width={24}
-                              />
-                              <span className="text-sm font-semibold text-neutral-700 lg:text-md">
-                                {formatRating(relatedBook.rating)}
-                              </span>
-                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <Image
+                              alt=""
+                              aria-hidden="true"
+                              height={24}
+                              src="/icon-star.svg"
+                              width={24}
+                            />
+                            <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                              {formatRating(relatedBook.rating)}
+                            </span>
                           </div>
-                        </article>
-                      </Link>
+                        </div>
+                      </article>
                     ))}
                   </div>
 
