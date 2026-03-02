@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { HomeCarousel } from "@/components/home/home-carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -184,45 +185,44 @@ export default function HomePage() {
           <>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
               {recommendationItems.map((book) => (
-                <article
-                  className="grid gap-0 overflow-hidden rounded-xl shadow-card"
-                  key={book.id}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    alt={`${book.title} cover`}
-                    className="h-[258px] w-full object-cover md:h-84"
-                    loading="lazy"
-                    onError={(event) => {
-                      const image = event.currentTarget;
-                      if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
-                        return;
-                      }
-                      image.src = DEFAULT_BOOK_COVER;
-                    }}
-                    src={getBookCoverSource(book.coverImage)}
-                  />
-                  <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
-                    <p className="text-sm font-bold text-neutral-950 lg:text-lg">
-                      {book.title}
-                    </p>
-                    <p className="text-sm text-neutral-700 lg:text-md">
-                      {book.author?.name || "Unknown author"}
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <Image
-                        alt=""
-                        aria-hidden="true"
-                        height={24}
-                        src="/icon-star.svg"
-                        width={24}
-                      />
-                      <span className="text-sm font-semibold text-neutral-700 lg:text-md">
-                        {formatRating(book.rating)}
-                      </span>
+                <Link href={`/detail/${book.id}`} key={book.id}>
+                  <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      alt={`${book.title} cover`}
+                      className="h-[258px] w-full object-cover md:h-84"
+                      loading="lazy"
+                      onError={(event) => {
+                        const image = event.currentTarget;
+                        if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                          return;
+                        }
+                        image.src = DEFAULT_BOOK_COVER;
+                      }}
+                      src={getBookCoverSource(book.coverImage)}
+                    />
+                    <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                      <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                        {book.title}
+                      </p>
+                      <p className="text-sm text-neutral-700 lg:text-md">
+                        {book.author?.name || "Unknown author"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <Image
+                          alt=""
+                          aria-hidden="true"
+                          height={24}
+                          src="/icon-star.svg"
+                          width={24}
+                        />
+                        <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                          {formatRating(book.rating)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </Link>
               ))}
             </div>
 

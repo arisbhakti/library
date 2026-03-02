@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
 const tanstackApiClient = axios.create({
@@ -29,6 +29,55 @@ export type RecommendationBook = {
     id: number;
     name: string;
   };
+};
+
+export type BookDetailAuthor = {
+  id: number;
+  name: string;
+  bio: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BookDetailCategory = {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BookDetailReview = {
+  id: number;
+  star: number;
+  comment: string;
+  userId: number;
+  bookId: number;
+  createdAt: string;
+  user: {
+    id: number;
+    name: string;
+  } | null;
+};
+
+export type BookDetail = {
+  id: number;
+  title: string;
+  description: string;
+  isbn: string;
+  publishedYear: number;
+  coverImage: string;
+  rating: number;
+  reviewCount: number;
+  totalCopies: number;
+  availableCopies: number;
+  borrowCount: number;
+  authorId: number;
+  categoryId: number;
+  createdAt: string;
+  updatedAt: string;
+  author: BookDetailAuthor | null;
+  category: BookDetailCategory | null;
+  reviews: BookDetailReview[];
 };
 
 export type RecommendationPagination = {
@@ -68,6 +117,12 @@ type PopularAuthorsResponse = {
   data: PopularAuthorsData;
 };
 
+type BookDetailResponse = {
+  success: boolean;
+  message: string;
+  data: BookDetail;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -84,6 +139,10 @@ export const tanstackQueryKeys = {
     all: ["popular-authors"] as const,
     list: (params: { limit: number }) =>
       [...tanstackQueryKeys.popularAuthors.all, params] as const,
+  },
+  bookDetail: {
+    all: ["book-detail"] as const,
+    detail: (id: number) => [...tanstackQueryKeys.bookDetail.all, id] as const,
   },
 };
 
@@ -196,5 +255,36 @@ export function usePopularAuthorsInfiniteQuery({
 
       return page + 1;
     },
+  });
+}
+
+export async function fetchBookDetail(
+  id: number,
+  signal?: AbortSignal,
+): Promise<BookDetail> {
+  const response = await tanstackApiClient.get<BookDetailResponse>(
+    `/books/${id}`,
+    {
+      signal,
+    },
+  );
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Gagal memuat detail buku.");
+  }
+
+  return response.data.data;
+}
+
+export function useBookDetailQuery(id: number | null) {
+  return useQuery({
+    queryKey: tanstackQueryKeys.bookDetail.detail(id ?? 0),
+    queryFn: ({ signal }) => {
+      if (!id || id <= 0) {
+        throw new Error("ID buku tidak valid.");
+      }
+      return fetchBookDetail(id, signal);
+    },
+    enabled: typeof id === "number" && Number.isFinite(id) && id > 0,
   });
 }
