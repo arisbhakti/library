@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   AUTH_STATE_CHANGED_EVENT,
   getAuthRole,
@@ -65,9 +66,10 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
   return (
     <div className="min-h-screen">
       <Header />
-
-      <main className="min-h-screen pt-16 md:pt-20">{children}</main>
-      {hideFooter ? null : <Footer />}
+      <PageTransition>
+        <main className="min-h-screen pt-16 md:pt-20">{children}</main>
+        {hideFooter ? null : <Footer />}
+      </PageTransition>
     </div>
   );
 }
