@@ -199,6 +199,14 @@ type AddCartItemResponse = {
   };
 };
 
+export type RemoveCartItemResponse = {
+  success: boolean;
+  message: string;
+  data?: {
+    id: number;
+  };
+};
+
 export type CheckoutUser = {
   name: string;
   email: string;
@@ -1159,6 +1167,39 @@ export async function addCartItem(options: {
     }
 
     throw new Error("Terjadi kesalahan saat menambahkan buku ke cart.");
+  }
+}
+
+export async function removeCartItem(options: {
+  itemId: number;
+  token?: string | null;
+}): Promise<RemoveCartItemResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.delete<RemoveCartItemResponse>(
+      `/cart/items/${options.itemId}`,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal menghapus buku dari cart.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<RemoveCartItemResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal menghapus buku dari cart.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat menghapus buku dari cart.");
   }
 }
 
