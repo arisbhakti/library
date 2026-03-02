@@ -256,7 +256,14 @@ export default function DetailPage() {
                     asChild
                     className="font-semibold text-primary-300 hover:text-primary-300/90"
                   >
-                    <Link href="/category">{categoryName}</Link>
+                    <Link
+                      href={{
+                        pathname: "/category",
+                        query: { category: categoryName },
+                      }}
+                    >
+                      {categoryName}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="text-neutral-900 [&>svg]:size-4" />

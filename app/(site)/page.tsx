@@ -218,30 +218,36 @@ export default function HomePage() {
                 const icon = getCategoryIcon(category.name);
 
                 return (
-                  <article
-                    className="grid gap-2 rounded-2xl p-2 shadow-card lg:p-3"
+                  <Link
+                    className="block"
+                    href={{
+                      pathname: "/category",
+                      query: { category: category.name },
+                    }}
                     key={category.id}
                   >
-                    <div className="flex items-center justify-center rounded-xl bg-primary-50 p-[5.6px] md:p-[6.4px]">
-                      {icon.type === "image" ? (
-                        <Image
-                          alt={category.name}
-                          className="md:h-[51.2px] md:w-[51.2px]"
-                          height={44.8}
-                          src={icon.src}
-                          width={44.8}
-                        />
-                      ) : (
-                        <icon.Icon
-                          aria-hidden="true"
-                          className="h-11 w-11 text-[#1E3A8A] md:h-[51.2px] md:w-[51.2px]"
-                        />
-                      )}
-                    </div>
-                    <p className="text-xs font-semibold text-neutral-950 md:text-md">
-                      {category.name}
-                    </p>
-                  </article>
+                    <article className="grid gap-2 rounded-2xl p-2 shadow-card lg:p-3">
+                      <div className="flex items-center justify-center rounded-xl bg-primary-50 p-[5.6px] md:p-[6.4px]">
+                        {icon.type === "image" ? (
+                          <Image
+                            alt={category.name}
+                            className="md:h-[51.2px] md:w-[51.2px]"
+                            height={44.8}
+                            src={icon.src}
+                            width={44.8}
+                          />
+                        ) : (
+                          <icon.Icon
+                            aria-hidden="true"
+                            className="h-11 w-11 text-[#1E3A8A] md:h-[51.2px] md:w-[51.2px]"
+                          />
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold text-neutral-950 md:text-md">
+                        {category.name}
+                      </p>
+                    </article>
+                  </Link>
                 );
               })}
             </div>

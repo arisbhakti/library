@@ -2,25 +2,20 @@
 
 import { ListFilter, Star, X } from "lucide-react";
 import Image from "next/image";
+import { useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useCategoriesQuery } from "@/lib/tanstack-api";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sidebar,
   SidebarContent,
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const categoryFilters = [
-  { checked: true, label: "Fiction" },
-  { checked: false, label: "Non-fiction" },
-  { checked: false, label: "Self-Improve" },
-  { checked: false, label: "Finance" },
-  { checked: false, label: "Science" },
-  { checked: false, label: "Education" },
-];
 
 const ratingFilters = [5, 4, 3, 2, 1];
 
@@ -32,24 +27,79 @@ const books = Array.from({ length: 8 }, (_, index) => ({
   image: "/dummy-recommendation.png",
 }));
 
-function FilterFields() {
+function normalizeCategoryName(value: string) {
+  return value.trim().toLowerCase();
+}
+
+type FilterFieldsProps = {
+  categories: Array<{ id: number; name: string }>;
+  isCategoriesLoading: boolean;
+  isCategoriesError: boolean;
+  categoriesErrorMessage: string;
+  onRetryCategories: () => void;
+  selectedCategorySet: Set<string>;
+  onCategoryCheckedChange: (categoryName: string, nextChecked: boolean) => void;
+};
+
+function FilterFields({
+  categories,
+  isCategoriesLoading,
+  isCategoriesError,
+  categoriesErrorMessage,
+  onRetryCategories,
+  selectedCategorySet,
+  onCategoryCheckedChange,
+}: FilterFieldsProps) {
   return (
     <div className="grid gap-4">
       <div className="grid gap-3">
         <p className="text-md md:text-lg font-extrabold text-neutral-950">
           Category
         </p>
-        <div className="grid gap-2">
-          {categoryFilters.map((item) => (
-            <label className="flex items-center gap-2" key={item.label}>
-              <Checkbox
-                className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
-                defaultChecked={item.checked}
-              />
-              <span className="text-md text-neutral-900">{item.label}</span>
-            </label>
-          ))}
-        </div>
+        {isCategoriesLoading ? (
+          <div className="grid gap-2">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div className="flex items-center gap-2" key={`category-filter-${index}`}>
+                <Skeleton className="h-4 w-4 rounded-[4px]" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {isCategoriesError ? (
+          <div className="grid gap-2">
+            <p className="text-sm text-neutral-700">{categoriesErrorMessage}</p>
+            <Button className="h-8 w-fit rounded-full px-3" onClick={onRetryCategories}>
+              Coba Lagi
+            </Button>
+          </div>
+        ) : null}
+
+        {!isCategoriesLoading && !isCategoriesError ? (
+          <>
+            <div className="grid gap-2">
+              {categories.map((category) => (
+                <label className="flex items-center gap-2" key={category.id}>
+                  <Checkbox
+                    checked={selectedCategorySet.has(
+                      normalizeCategoryName(category.name),
+                    )}
+                    className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
+                    onCheckedChange={(checked) =>
+                      onCategoryCheckedChange(category.name, checked === true)
+                    }
+                  />
+                  <span className="text-md text-neutral-900">{category.name}</span>
+                </label>
+              ))}
+            </div>
+
+            {categories.length === 0 ? (
+              <p className="text-sm text-neutral-700">Belum ada kategori.</p>
+            ) : null}
+          </>
+        ) : null}
       </div>
 
       <div className="grid gap-3 border-t border-neutral-200 pt-4">
@@ -83,7 +133,15 @@ function MobileFilterTrigger() {
   );
 }
 
-function MobileFilterSidebar() {
+function MobileFilterSidebar({
+  categories,
+  categoriesErrorMessage,
+  isCategoriesError,
+  isCategoriesLoading,
+  onCategoryCheckedChange,
+  onRetryCategories,
+  selectedCategorySet,
+}: FilterFieldsProps) {
   const isMobile = useIsMobile();
   const { setOpenMobile } = useSidebar();
 
@@ -106,7 +164,15 @@ function MobileFilterSidebar() {
               <X className="h-4 w-4 text-neutral-900" />
             </button>
           </div>
-          <FilterFields />
+          <FilterFields
+            categories={categories}
+            categoriesErrorMessage={categoriesErrorMessage}
+            isCategoriesError={isCategoriesError}
+            isCategoriesLoading={isCategoriesLoading}
+            onCategoryCheckedChange={onCategoryCheckedChange}
+            onRetryCategories={onRetryCategories}
+            selectedCategorySet={selectedCategorySet}
+          />
         </div>
       </SidebarContent>
     </Sidebar>
@@ -114,6 +180,71 @@ function MobileFilterSidebar() {
 }
 
 export default function CategoryPage() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const {
+    data: categoriesData,
+    error: categoriesError,
+    isError: isCategoriesError,
+    isLoading: isCategoriesLoading,
+    refetch: refetchCategories,
+  } = useCategoriesQuery();
+
+  const categories = useMemo(() => categoriesData?.categories ?? [], [categoriesData]);
+  const categoryNameByNormalized = useMemo(() => {
+    return new Map(
+      categories.map((category) => [
+        normalizeCategoryName(category.name),
+        category.name,
+      ]),
+    );
+  }, [categories]);
+
+  const selectedCategorySet = useMemo(() => {
+    const selectedValues = searchParams
+      .getAll("category")
+      .flatMap((value) => value.split(","))
+      .map((value) => normalizeCategoryName(value))
+      .filter((value) => value && categoryNameByNormalized.has(value));
+
+    return new Set(selectedValues);
+  }, [categoryNameByNormalized, searchParams]);
+
+  const handleCategoryCheckedChange = (
+    categoryName: string,
+    nextChecked: boolean,
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    const currentSelectedSet = new Set(
+      params
+        .getAll("category")
+        .flatMap((value) => value.split(","))
+        .map((value) => normalizeCategoryName(value))
+        .filter((value) => value && categoryNameByNormalized.has(value)),
+    );
+
+    const normalizedName = normalizeCategoryName(categoryName);
+    if (nextChecked) {
+      currentSelectedSet.add(normalizedName);
+    } else {
+      currentSelectedSet.delete(normalizedName);
+    }
+
+    params.delete("category");
+    Array.from(currentSelectedSet)
+      .map((normalized) => categoryNameByNormalized.get(normalized) || normalized)
+      .sort((left, right) => left.localeCompare(right))
+      .forEach((name) => params.append("category", name));
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
+  const categoriesErrorMessage =
+    (categoriesError as Error | null)?.message || "Gagal memuat kategori.";
+
   return (
     <SidebarProvider className="block! ">
       <main className="grid gap-5 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
@@ -129,7 +260,15 @@ export default function CategoryPage() {
               <p className="text-sm md:text-md font-extrabold text-neutral-950">
                 FILTER
               </p>
-              <FilterFields />
+              <FilterFields
+                categories={categories}
+                categoriesErrorMessage={categoriesErrorMessage}
+                isCategoriesError={isCategoriesError}
+                isCategoriesLoading={isCategoriesLoading}
+                onCategoryCheckedChange={handleCategoryCheckedChange}
+                onRetryCategories={() => refetchCategories()}
+                selectedCategorySet={selectedCategorySet}
+              />
             </div>
           </aside>
 
@@ -174,7 +313,15 @@ export default function CategoryPage() {
         </div>
       </main>
 
-      <MobileFilterSidebar />
+      <MobileFilterSidebar
+        categories={categories}
+        categoriesErrorMessage={categoriesErrorMessage}
+        isCategoriesError={isCategoriesError}
+        isCategoriesLoading={isCategoriesLoading}
+        onCategoryCheckedChange={handleCategoryCheckedChange}
+        onRetryCategories={() => refetchCategories()}
+        selectedCategorySet={selectedCategorySet}
+      />
     </SidebarProvider>
   );
 }
