@@ -60,6 +60,21 @@ type JwtPayload = {
   exp?: number;
 };
 
+export function normalizeUserRole(
+  role: string | null | undefined,
+): UserRole | null {
+  if (typeof role !== "string") {
+    return null;
+  }
+
+  const normalizedRole = role.trim().toUpperCase();
+  if (normalizedRole === "ADMIN" || normalizedRole === "USER") {
+    return normalizedRole;
+  }
+
+  return null;
+}
+
 function dispatchAuthStateChangedEvent() {
   if (typeof window === "undefined") {
     return;
@@ -117,7 +132,13 @@ export function saveAuthUser(user: LoginUser): void {
     return;
   }
 
-  localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
+  const normalizedRole = normalizeUserRole(user.role);
+  const normalizedUser: LoginUser = {
+    ...user,
+    role: normalizedRole ?? user.role,
+  };
+
+  localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(normalizedUser));
   dispatchAuthStateChangedEvent();
 }
 
@@ -179,14 +200,12 @@ export function getRoleFromToken(token: string | null): UserRole | null {
   }
 
   const payload = parseJwtPayload(token);
-  return payload?.role === "ADMIN" || payload?.role === "USER"
-    ? payload.role
-    : null;
+  return normalizeUserRole(payload?.role);
 }
 
 export function getAuthRole(): UserRole | null {
-  const userRole = getAuthUser()?.role;
-  if (userRole === "ADMIN" || userRole === "USER") {
+  const userRole = normalizeUserRole(getAuthUser()?.role);
+  if (userRole) {
     return userRole;
   }
 

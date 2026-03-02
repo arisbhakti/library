@@ -527,11 +527,11 @@ export default function DetailPage() {
             </Breadcrumb>
 
             <section className="grid gap-9 lg:grid-cols-[auto_1fr]">
-              <div className="grid justify-center">
+              <div className="grid justify-center ">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt={`${book.title} cover`}
-                  className="h-[318px] w-[212px] object-cover md:h-[482px] md:w-[321px]"
+                  className="h-[318px] w-[212px] object-cover md:h-[482px] md:w-[321px] p-2 bg-neutral-200"
                   onError={(event) => {
                     const image = event.currentTarget;
                     if (image.src.endsWith(DEFAULT_BOOK_COVER)) {

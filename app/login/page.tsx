@@ -6,7 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAppToast } from "@/components/ui/app-toast";
-import { login, saveAuthSession } from "@/lib/auth";
+import {
+  getAuthRole,
+  login,
+  normalizeUserRole,
+  saveAuthSession,
+} from "@/lib/auth";
 
 function EyeIcon() {
   return (
@@ -66,6 +71,10 @@ function validateLogin(values: FormValues): FormErrors {
   return errors;
 }
 
+function getPostLoginPathByRole(role: string | null | undefined): string {
+  return normalizeUserRole(role) === "ADMIN" ? "/list" : "/home";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { showErrorToast, showSuccessToast } = useAppToast();
@@ -77,10 +86,19 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isErrorAnimating, setIsErrorAnimating] = useState(false);
 
+  useEffect(() => {
+    const role = getAuthRole();
+    if (!role) {
+      return;
+    }
+
+    router.replace(getPostLoginPathByRole(role));
+  }, [router]);
+
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: (response) => {
-      if (!response.success || !response.data?.token) {
+      if (!response.success || !response.data?.token || !response.data?.user) {
         const message = response.message || "Login gagal.";
         setErrors({ form: message });
         showErrorToast(message);
@@ -91,7 +109,7 @@ export default function LoginPage() {
       saveAuthSession(response.data);
       showSuccessToast(response.message || "Login berhasil.");
       setErrors({});
-      router.push("/");
+      router.replace(getPostLoginPathByRole(response.data.user.role));
     },
     onError: (error) => {
       setErrors({ form: error.message });

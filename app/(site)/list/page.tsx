@@ -53,7 +53,7 @@ export default function ListPage() {
       setIsRoleChecked(true);
 
       if (!allowed) {
-        router.replace("/403");
+        router.replace("/home");
       }
     };
 
