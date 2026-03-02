@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -250,6 +251,7 @@ function UserMenuItems({
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const [authView, setAuthView] = useState<AuthViewState>(() =>
     getAuthViewState(isLoggedIn),
   );
@@ -308,7 +310,8 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   }, [cartData, dispatch]);
 
   const handleLogout = () => {
-    clearAuthSession();
+    clearAuthSession({ clearAppStorage: true });
+    queryClient.clear();
     dispatch(resetCartState());
     setAuthView(getAuthViewState(false));
     setIsMobileGuestMenuOpen(false);

@@ -11,6 +11,7 @@ const authClient = axios.create({
 export const AUTH_TOKEN_STORAGE_KEY = "library_auth_token";
 export const AUTH_USER_STORAGE_KEY = "library_auth_user";
 export const AUTH_STATE_CHANGED_EVENT = "library_auth_state_changed";
+export const APP_STORAGE_KEY_PREFIX = "library_";
 
 export type UserRole = "USER" | "ADMIN";
 
@@ -210,7 +211,35 @@ export function removeAuthUser(): void {
   dispatchAuthStateChangedEvent();
 }
 
-export function clearAuthSession(): void {
-  removeAuthToken();
-  removeAuthUser();
+function removeKeysByPrefix(storage: Storage, prefix: string): void {
+  const keysToRemove: string[] = [];
+
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (key && key.startsWith(prefix)) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach((key) => {
+    storage.removeItem(key);
+  });
+}
+
+export function clearAuthSession(options?: {
+  clearAppStorage?: boolean;
+}): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+
+  if (options?.clearAppStorage) {
+    removeKeysByPrefix(localStorage, APP_STORAGE_KEY_PREFIX);
+    removeKeysByPrefix(sessionStorage, APP_STORAGE_KEY_PREFIX);
+  }
+
+  dispatchAuthStateChangedEvent();
 }
