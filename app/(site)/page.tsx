@@ -24,6 +24,8 @@ const popularAuthors = Array.from({ length: 4 }, (_, index) => ({
   avatar: "/dummy-avatar.png",
 }));
 
+const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
+
 function RecommendationSkeletonGrid() {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
@@ -50,6 +52,29 @@ function RecommendationSkeletonGrid() {
 function formatRating(rating: number) {
   const fixed = rating.toFixed(2);
   return fixed.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function getBookCoverSource(coverImage?: string) {
+  if (!coverImage) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  const normalized = coverImage.trim();
+
+  if (!normalized) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  if (
+    normalized.startsWith("data:image/") ||
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("/")
+  ) {
+    return normalized;
+  }
+
+  return DEFAULT_BOOK_COVER;
 }
 
 export default function HomePage() {
@@ -129,7 +154,14 @@ export default function HomePage() {
                     alt={`${book.title} cover`}
                     className="h-[258px] w-full object-cover md:h-84"
                     loading="lazy"
-                    src={book.coverImage || "/dummy-recommendation.png"}
+                    onError={(event) => {
+                      const image = event.currentTarget;
+                      if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                        return;
+                      }
+                      image.src = DEFAULT_BOOK_COVER;
+                    }}
+                    src={getBookCoverSource(book.coverImage)}
                   />
                   <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
                     <p className="text-sm font-bold text-neutral-950 lg:text-lg">
