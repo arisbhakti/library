@@ -35,6 +35,19 @@ export type LoginResponse = {
   data?: LoginData;
 };
 
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+};
+
+export type RegisterResponse = {
+  success: boolean;
+  message: string;
+  data?: LoginUser;
+};
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   try {
     const response = await authClient.post<LoginResponse>("/auth/login", payload);
@@ -47,6 +60,26 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     }
 
     throw new Error("Terjadi kesalahan saat login.");
+  }
+}
+
+export async function register(
+  payload: RegisterPayload,
+): Promise<RegisterResponse> {
+  try {
+    const response = await authClient.post<RegisterResponse>(
+      "/auth/register",
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<RegisterResponse>(error)) {
+      const message =
+        error.response?.data?.message ?? "Register gagal. Silakan coba lagi.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat register.");
   }
 }
 
