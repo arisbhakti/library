@@ -539,6 +539,28 @@ export type CreateBookResponse = {
   data?: CreateBookData;
 };
 
+export type UpdateBookPayload = {
+  id: number;
+  token?: string | null;
+  title: string;
+  description: string;
+  isbn: string;
+  publishedYear: number;
+  authorId?: number;
+  authorName: string;
+  categoryId: number;
+  totalCopies: number;
+  availableCopies: number;
+};
+
+export type UpdateBookResponse = {
+  success: boolean;
+  message: string;
+  data?: {
+    book: CreateBookData;
+  };
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -1632,6 +1654,49 @@ export async function createBook(
     }
 
     throw new Error("Terjadi kesalahan saat menambahkan buku.");
+  }
+}
+
+export async function updateBook(
+  payload: UpdateBookPayload,
+): Promise<UpdateBookResponse> {
+  try {
+    const token = payload.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.put<UpdateBookResponse>(
+      `/books/${payload.id}`,
+      {
+        title: payload.title,
+        description: payload.description,
+        isbn: payload.isbn,
+        publishedYear: payload.publishedYear,
+        authorId: payload.authorId,
+        authorName: payload.authorName,
+        categoryId: payload.categoryId,
+        totalCopies: payload.totalCopies,
+        availableCopies: payload.availableCopies,
+      },
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal memperbarui buku.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<UpdateBookResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memperbarui buku.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memperbarui buku.");
   }
 }
 
