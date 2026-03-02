@@ -247,6 +247,30 @@ type LoanFromCartResponse = {
   data?: LoanFromCartData;
 };
 
+export type MyLoanStatusFilter = "all" | "active" | "returned" | "overdue";
+
+export type MyLoan = {
+  id: number;
+  status: string;
+  displayStatus: string;
+  borrowedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  durationDays: number;
+  book: RecommendationBook;
+};
+
+export type MyLoansData = {
+  loans: MyLoan[];
+  pagination: RecommendationPagination;
+};
+
+type MyLoansResponse = {
+  success: boolean;
+  message: string;
+  data?: MyLoansData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -265,6 +289,14 @@ type FetchAuthorBooksPageParams = {
   authorId: number;
   page: number;
   limit: number;
+};
+
+type FetchMyLoansPageParams = {
+  status: MyLoanStatusFilter;
+  q?: string;
+  page: number;
+  limit: number;
+  token?: string | null;
 };
 
 export const tanstackQueryKeys = {
@@ -309,6 +341,15 @@ export const tanstackQueryKeys = {
     all: ["checkout"] as const,
     detail: (token: string | null) =>
       [...tanstackQueryKeys.checkout.all, token ?? ""] as const,
+  },
+  myLoans: {
+    all: ["my-loans"] as const,
+    list: (params: {
+      token: string | null;
+      status: MyLoanStatusFilter;
+      q: string | null;
+      limit: number;
+    }) => [...tanstackQueryKeys.myLoans.all, params] as const,
   },
 };
 
@@ -403,6 +444,98 @@ export function useBooksInfiniteQuery({
           q: effectiveQ,
           categoryId,
           minRating,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+  });
+}
+
+export async function fetchMyLoansPage(
+  params: FetchMyLoansPageParams,
+  signal?: AbortSignal,
+): Promise<MyLoansData> {
+  try {
+    const token = params.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<MyLoansResponse>("/loans/my", {
+      signal,
+      params: {
+        status: params.status,
+        ...(params.q ? { q: params.q } : {}),
+        page: params.page,
+        limit: params.limit,
+      },
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat daftar peminjaman.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<MyLoansResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal memuat daftar peminjaman.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat daftar peminjaman.");
+  }
+}
+
+type UseMyLoansInfiniteQueryParams = {
+  token?: string | null;
+  status: MyLoanStatusFilter;
+  q?: string;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useMyLoansInfiniteQuery({
+  token,
+  status,
+  q,
+  limit = 3,
+  enabled = true,
+}: UseMyLoansInfiniteQueryParams) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.myLoans.list({
+      token: token ?? null,
+      status,
+      q: effectiveQ ?? null,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchMyLoansPage(
+        {
+          token,
+          status,
+          q: effectiveQ,
           page,
           limit,
         },

@@ -1,0 +1,55 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="240"
+  height="240"
+  viewBox="0 0 240 240"
+  fill="none"
+>
+  <rect width="240" height="240" rx="40" fill="#F8FAFC" />
+  <circle cx="120" cy="122" r="66" fill="#E6F0FF" />
+  <path
+    d="M78 94C78 89.5817 81.5817 86 86 86H117C121.418 86 125 89.5817 125 94V155C125 159.418 121.418 163 117 163H86C81.5817 163 78 159.418 78 155V94Z"
+    fill="#2563EB"
+  />
+  <path
+    d="M115 86H154C158.418 86 162 89.5817 162 94V155C162 159.418 158.418 163 154 163H115V86Z"
+    fill="#1D4ED8"
+  />
+  <path
+    d="M92 104H111"
+    stroke="#E2E8F0"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M92 116H111"
+    stroke="#E2E8F0"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M92 128H106"
+    stroke="#E2E8F0"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M129 104H148"
+    stroke="#BFDBFE"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M129 116H148"
+    stroke="#BFDBFE"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M129 128H142"
+    stroke="#BFDBFE"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <ellipse cx="120" cy="188" rx="50" ry="8" fill="#DBEAFE" />
+</svg>
