@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +16,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useBookDetailQuery } from "@/lib/tanstack-api";
+import {
+  useBookDetailQuery,
+  useRecommendationInfiniteQuery,
+} from "@/lib/tanstack-api";
 
 const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 const DEFAULT_AUTHOR_AVATAR = "/dummy-avatar.png";
@@ -138,8 +141,38 @@ function BookDetailSkeleton() {
   );
 }
 
+function RelatedBooksSkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+      {Array.from({ length: 4 }, (_, index) => (
+        <article
+          className="grid gap-0 overflow-hidden rounded-xl shadow-card"
+          key={`related-book-skeleton-${index}`}
+        >
+          <Skeleton className="h-[258px] w-full rounded-b-none rounded-t-xl md:h-84" />
+          <div className="grid gap-2 p-3 md:p-4">
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-4 w-3/5" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-6" />
+              <Skeleton className="h-4 w-8" />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export default function DetailPage() {
   const params = useParams<{ id: string }>();
+  const [reviewState, setReviewState] = useState<{
+    bookId: number | null;
+    count: number;
+  }>({
+    bookId: null,
+    count: 6,
+  });
 
   const bookId = useMemo(() => {
     const parsed = Number(params.id);
@@ -156,9 +189,24 @@ export default function DetailPage() {
     isLoading,
     refetch,
   } = useBookDetailQuery(bookId);
+  const {
+    data: relatedBooksData,
+    error: relatedBooksError,
+    isError: isRelatedBooksError,
+    isLoading: isRelatedBooksLoading,
+    refetch: refetchRelatedBooks,
+  } = useRecommendationInfiniteQuery({ by: "popular", limit: 4 });
+
+  const relatedBooks = useMemo(
+    () => relatedBooksData?.pages[0]?.books.slice(0, 4) ?? [],
+    [relatedBooksData],
+  );
 
   const authorName = book?.author?.name || "Unknown author";
   const categoryName = book?.category?.name || "Unknown category";
+  const visibleReviewCount = reviewState.bookId === bookId ? reviewState.count : 6;
+  const visibleReviews = book?.reviews.slice(0, visibleReviewCount) ?? [];
+  const hasMoreReviews = (book?.reviews.length ?? 0) > visibleReviewCount;
 
   if (bookId === null) {
     return (
@@ -330,56 +378,156 @@ export default function DetailPage() {
               </div>
 
               {book.reviews.length > 0 ? (
-                <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
-                  {book.reviews.map((review) => (
-                    <article
-                      className="grid gap-2 rounded-2xl bg-white p-4 shadow-card"
-                      key={review.id}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-14.5 md:size-16">
-                          <AvatarImage
-                            alt={review.user?.name || "User"}
-                            src={DEFAULT_AUTHOR_AVATAR}
-                          />
-                          <AvatarFallback>
-                            {getAuthorFallback(review.user?.name || "User")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="grid gap-0">
-                          <p className="text-sm font-bold text-neutral-950 md:text-lg">
-                            {review.user?.name || "Anonymous"}
-                          </p>
-                          <p className="text-sm font-medium text-neutral-950 md:text-md">
-                            {formatReviewDate(review.createdAt)}
-                          </p>
+                <>
+                  <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
+                    {visibleReviews.map((review) => (
+                      <article
+                        className="grid gap-2 rounded-2xl bg-white p-4 shadow-card"
+                        key={review.id}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="size-14.5 md:size-16">
+                            <AvatarImage
+                              alt={review.user?.name || "User"}
+                              src={DEFAULT_AUTHOR_AVATAR}
+                            />
+                            <AvatarFallback>
+                              {getAuthorFallback(review.user?.name || "User")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="grid gap-0">
+                            <p className="text-sm font-bold text-neutral-950 md:text-lg">
+                              {review.user?.name || "Anonymous"}
+                            </p>
+                            <p className="text-sm font-medium text-neutral-950 md:text-md">
+                              {formatReviewDate(review.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: review.star }, (_, index) => (
-                          <Image
-                            alt=""
-                            aria-hidden="true"
-                            height={24}
-                            key={`${review.id}-star-${index}`}
-                            src="/icon-star.svg"
-                            width={24}
-                          />
-                        ))}
-                      </div>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: review.star }, (_, index) => (
+                            <Image
+                              alt=""
+                              aria-hidden="true"
+                              height={24}
+                              key={`${review.id}-star-${index}`}
+                              src="/icon-star.svg"
+                              width={24}
+                            />
+                          ))}
+                        </div>
 
-                      <p className="text-sm font-semibold text-neutral-950 md:text-md">
-                        {review.comment || "-"}
-                      </p>
-                    </article>
-                  ))}
-                </div>
+                        <p className="text-sm font-semibold text-neutral-950 md:text-md">
+                          {review.comment || "-"}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+
+                  {hasMoreReviews ? (
+                    <div className="flex items-center justify-center">
+                      <Button
+                        className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm font-bold text-neutral-950 shadow-none hover:bg-neutral-100 md:h-12 md:w-50 md:text-md"
+                        onClick={() =>
+                          setReviewState((current) => {
+                            const baseCount =
+                              current.bookId === bookId ? current.count : 6;
+                            return {
+                              bookId,
+                              count: baseCount + 6,
+                            };
+                          })
+                        }
+                        variant="outline"
+                      >
+                        Load More
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
               ) : (
                 <p className="text-sm text-neutral-700 md:text-md">
                   Belum ada review untuk buku ini.
                 </p>
               )}
+            </section>
+
+            <section className="grid gap-4 border-t border-neutral-200 pt-8">
+              <h2 className="display-xs font-extrabold text-neutral-950 md:display-lg">
+                Related Books
+              </h2>
+
+              {isRelatedBooksLoading ? <RelatedBooksSkeletonGrid /> : null}
+
+              {isRelatedBooksError ? (
+                <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
+                  <p className="text-sm text-neutral-700 md:text-md">
+                    {(relatedBooksError as Error)?.message ||
+                      "Gagal memuat related books."}
+                  </p>
+                  <Button
+                    className="rounded-full"
+                    onClick={() => refetchRelatedBooks()}
+                    variant="outline"
+                  >
+                    Coba Lagi
+                  </Button>
+                </div>
+              ) : null}
+
+              {!isRelatedBooksLoading && !isRelatedBooksError ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+                    {relatedBooks.map((relatedBook) => (
+                      <Link href={`/detail/${relatedBook.id}`} key={relatedBook.id}>
+                        <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={`${relatedBook.title} cover`}
+                            className="h-[258px] w-full object-cover md:h-84"
+                            loading="lazy"
+                            onError={(event) => {
+                              const image = event.currentTarget;
+                              if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                                return;
+                              }
+                              image.src = DEFAULT_BOOK_COVER;
+                            }}
+                            src={getBookCoverSource(relatedBook.coverImage)}
+                          />
+                          <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                            <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                              {relatedBook.title}
+                            </p>
+                            <p className="text-sm text-neutral-700 lg:text-md">
+                              {relatedBook.author?.name || "Unknown author"}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <Image
+                                alt=""
+                                aria-hidden="true"
+                                height={24}
+                                src="/icon-star.svg"
+                                width={24}
+                              />
+                              <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                                {formatRating(relatedBook.rating)}
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {relatedBooks.length === 0 ? (
+                    <p className="text-sm text-neutral-700 md:text-md">
+                      Belum ada related books.
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
             </section>
           </>
         ) : null}
