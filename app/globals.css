@@ -246,6 +246,16 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+  a[href],
+  button:not(:disabled),
+  summary,
+  [role="button"]:not([aria-disabled="true"]) {
+    @apply cursor-pointer;
+  }
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    @apply cursor-not-allowed;
+  }
   body {
     @apply bg-background text-foreground;
   }
