@@ -199,6 +199,54 @@ type AddCartItemResponse = {
   };
 };
 
+export type CheckoutUser = {
+  name: string;
+  email: string;
+  nomorHandphone: string;
+};
+
+export type CheckoutItem = {
+  id: number;
+  bookId: number;
+  book: RecommendationBook;
+};
+
+export type CheckoutData = {
+  user: CheckoutUser;
+  items: CheckoutItem[];
+  itemCount: number;
+};
+
+type CheckoutResponse = {
+  success: boolean;
+  message: string;
+  data?: CheckoutData;
+};
+
+export type LoanFromCart = {
+  id: number;
+  userId: number;
+  bookId: number;
+  status: string;
+  borrowedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  returnByMessage: string;
+};
+
+export type LoanFromCartData = {
+  loans: LoanFromCart[];
+  failed: unknown[];
+  removedFromCart: number;
+  message: string;
+};
+
+type LoanFromCartResponse = {
+  success: boolean;
+  message: string;
+  data?: LoanFromCartData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -256,6 +304,11 @@ export const tanstackQueryKeys = {
     all: ["cart"] as const,
     detail: (token: string | null) =>
       [...tanstackQueryKeys.cart.all, token ?? ""] as const,
+  },
+  checkout: {
+    all: ["checkout"] as const,
+    detail: (token: string | null) =>
+      [...tanstackQueryKeys.checkout.all, token ?? ""] as const,
   },
 };
 
@@ -642,6 +695,100 @@ export async function addCartItem(options: {
     }
 
     throw new Error("Terjadi kesalahan saat menambahkan buku ke cart.");
+  }
+}
+
+export async function fetchCheckout(
+  options?: {
+    token?: string | null;
+  },
+  signal?: AbortSignal,
+): Promise<CheckoutData> {
+  try {
+    const token = options?.token?.trim() ?? "";
+    const response = await tanstackApiClient.get<CheckoutResponse>("/cart/checkout", {
+      signal,
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat data checkout.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<CheckoutResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal memuat data checkout.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat data checkout.");
+  }
+}
+
+export function useCheckoutQuery(
+  options?: {
+    token?: string | null;
+    enabled?: boolean;
+  },
+) {
+  const token = options?.token ?? null;
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: tanstackQueryKeys.checkout.detail(token),
+    queryFn: ({ signal }) =>
+      fetchCheckout(
+        {
+          token,
+        },
+        signal,
+      ),
+    enabled,
+  });
+}
+
+export async function borrowFromCart(options: {
+  itemIds: number[];
+  days: number;
+  borrowDate: string;
+  token?: string | null;
+}): Promise<LoanFromCartResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.post<LoanFromCartResponse>(
+      "/loans/from-cart",
+      {
+        itemIds: options.itemIds,
+        days: options.days,
+        borrowDate: options.borrowDate,
+      },
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal memproses checkout.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<LoanFromCartResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memproses checkout.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memproses checkout.");
   }
 }
 
