@@ -3,8 +3,8 @@
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -119,7 +119,17 @@ function MobileBrand() {
   );
 }
 
-function SearchField({ compact = false }: { compact?: boolean }) {
+function SearchField({
+  compact = false,
+  defaultValue,
+  inputKey,
+  onChange,
+}: {
+  compact?: boolean;
+  defaultValue?: string;
+  inputKey: string;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
   return (
     <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300 px-4">
       <Image
@@ -131,6 +141,9 @@ function SearchField({ compact = false }: { compact?: boolean }) {
       />
       <Input
         className="h-full border-0 bg-transparent p-0 text-sm font-medium text-neutral-950 shadow-none placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0"
+        defaultValue={defaultValue}
+        key={inputKey}
+        onChange={onChange}
         placeholder="Search book"
         type="text"
       />
@@ -227,6 +240,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const syncAuth = () => setAuthView(getAuthViewState(isLoggedIn));
@@ -253,6 +267,30 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     setIsSearchOpen(false);
     router.push("/login");
   };
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value;
+
+    const params = new URLSearchParams(
+      pathname === "/category" ? searchParams.toString() : "",
+    );
+
+    if (nextValue) {
+      params.set("q", nextValue);
+    } else {
+      params.delete("q");
+    }
+
+    params.delete("page");
+
+    const query = params.toString();
+    router.replace(query ? `/category?${query}` : "/category", {
+      scroll: false,
+    });
+  };
+
+  const categoryQuery = pathname === "/category" ? (searchParams.get("q") ?? "") : "";
+  const searchFieldKey = `${pathname}-${categoryQuery}`;
 
   if (isAdminLibraryPage) {
     return (
@@ -324,7 +362,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
         {isSearchOpen ? (
           <div className="flex w-full items-center gap-3">
             <MobileBrand />
-            <SearchField compact />
+            <SearchField
+              compact
+              defaultValue={categoryQuery}
+              inputKey={searchFieldKey}
+              onChange={handleSearchChange}
+            />
             <button
               aria-label="Close search"
               className="flex h-8 w-8 items-center justify-center"
@@ -448,7 +491,11 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
           <DesktopBrand />
           {authView.isLoggedIn ? (
             <div className="w-[500px]">
-              <SearchField />
+              <SearchField
+                defaultValue={categoryQuery}
+                inputKey={searchFieldKey}
+                onChange={handleSearchChange}
+              />
             </div>
           ) : null}
           {authView.isLoggedIn ? (

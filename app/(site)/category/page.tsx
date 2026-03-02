@@ -2,11 +2,12 @@
 
 import { ListFilter, Star, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useCategoriesQuery } from "@/lib/tanstack-api";
+import { useBooksInfiniteQuery, useCategoriesQuery } from "@/lib/tanstack-api";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,17 +19,50 @@ import {
 } from "@/components/ui/sidebar";
 
 const ratingFilters = [5, 4, 3, 2, 1];
+const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 
-const books = Array.from({ length: 8 }, (_, index) => ({
-  id: index + 1,
-  name: "Book Name",
-  author: "Author name",
-  rating: "4.9",
-  image: "/dummy-recommendation.png",
-}));
+function parsePositiveInteger(value: string | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
 
 function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase();
+}
+
+function formatRating(rating: number) {
+  const fixed = rating.toFixed(2);
+  return fixed.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function getBookCoverSource(coverImage?: string) {
+  if (!coverImage) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  const normalized = coverImage.trim();
+  if (!normalized) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  if (
+    normalized.startsWith("data:image/") ||
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("/")
+  ) {
+    return normalized;
+  }
+
+  return DEFAULT_BOOK_COVER;
 }
 
 type FilterFieldsProps = {
@@ -37,8 +71,10 @@ type FilterFieldsProps = {
   isCategoriesError: boolean;
   categoriesErrorMessage: string;
   onRetryCategories: () => void;
-  selectedCategorySet: Set<string>;
-  onCategoryCheckedChange: (categoryName: string, nextChecked: boolean) => void;
+  selectedCategoryId: number | null;
+  selectedRating: number | null;
+  onCategoryCheckedChange: (categoryId: number, nextChecked: boolean) => void;
+  onRatingCheckedChange: (rating: number, nextChecked: boolean) => void;
 };
 
 function FilterFields({
@@ -47,8 +83,10 @@ function FilterFields({
   isCategoriesError,
   categoriesErrorMessage,
   onRetryCategories,
-  selectedCategorySet,
+  selectedCategoryId,
+  selectedRating,
   onCategoryCheckedChange,
+  onRatingCheckedChange,
 }: FilterFieldsProps) {
   return (
     <div className="grid gap-4">
@@ -56,6 +94,7 @@ function FilterFields({
         <p className="text-md md:text-lg font-extrabold text-neutral-950">
           Category
         </p>
+
         {isCategoriesLoading ? (
           <div className="grid gap-2">
             {Array.from({ length: 6 }, (_, index) => (
@@ -82,12 +121,10 @@ function FilterFields({
               {categories.map((category) => (
                 <label className="flex items-center gap-2" key={category.id}>
                   <Checkbox
-                    checked={selectedCategorySet.has(
-                      normalizeCategoryName(category.name),
-                    )}
+                    checked={selectedCategoryId === category.id}
                     className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
                     onCheckedChange={(checked) =>
-                      onCategoryCheckedChange(category.name, checked === true)
+                      onCategoryCheckedChange(category.id, checked === true)
                     }
                   />
                   <span className="text-md text-neutral-900">{category.name}</span>
@@ -107,7 +144,13 @@ function FilterFields({
         <div className="grid gap-2">
           {ratingFilters.map((rating) => (
             <label className="flex items-center gap-2" key={rating}>
-              <Checkbox className="border-neutral-300" />
+              <Checkbox
+                checked={selectedRating === rating}
+                className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
+                onCheckedChange={(checked) =>
+                  onRatingCheckedChange(rating, checked === true)
+                }
+              />
               <Star className="h-4 w-4 fill-[#FFAB0D] text-[#FFAB0D]" />
               <span className="text-md text-neutral-900">{rating}</span>
             </label>
@@ -133,15 +176,7 @@ function MobileFilterTrigger() {
   );
 }
 
-function MobileFilterSidebar({
-  categories,
-  categoriesErrorMessage,
-  isCategoriesError,
-  isCategoriesLoading,
-  onCategoryCheckedChange,
-  onRetryCategories,
-  selectedCategorySet,
-}: FilterFieldsProps) {
+function MobileFilterSidebar(props: FilterFieldsProps) {
   const isMobile = useIsMobile();
   const { setOpenMobile } = useSidebar();
 
@@ -164,18 +199,34 @@ function MobileFilterSidebar({
               <X className="h-4 w-4 text-neutral-900" />
             </button>
           </div>
-          <FilterFields
-            categories={categories}
-            categoriesErrorMessage={categoriesErrorMessage}
-            isCategoriesError={isCategoriesError}
-            isCategoriesLoading={isCategoriesLoading}
-            onCategoryCheckedChange={onCategoryCheckedChange}
-            onRetryCategories={onRetryCategories}
-            selectedCategorySet={selectedCategorySet}
-          />
+
+          <FilterFields {...props} />
         </div>
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+function BooksSkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+      {Array.from({ length: 8 }, (_, index) => (
+        <article
+          className="grid gap-0 overflow-hidden rounded-xl shadow-card"
+          key={`category-book-skeleton-${index}`}
+        >
+          <Skeleton className="h-[258px] w-full rounded-b-none rounded-t-xl md:h-84" />
+          <div className="grid gap-2 p-3 md:p-4">
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-4 w-3/5" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-6" />
+              <Skeleton className="h-4 w-8" />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -183,6 +234,7 @@ export default function CategoryPage() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const {
     data: categoriesData,
     error: categoriesError,
@@ -192,54 +244,105 @@ export default function CategoryPage() {
   } = useCategoriesQuery();
 
   const categories = useMemo(() => categoriesData?.categories ?? [], [categoriesData]);
-  const categoryNameByNormalized = useMemo(() => {
-    return new Map(
-      categories.map((category) => [
-        normalizeCategoryName(category.name),
-        category.name,
-      ]),
-    );
-  }, [categories]);
 
-  const selectedCategorySet = useMemo(() => {
-    const selectedValues = searchParams
-      .getAll("category")
-      .flatMap((value) => value.split(","))
-      .map((value) => normalizeCategoryName(value))
-      .filter((value) => value && categoryNameByNormalized.has(value));
+  const categoryById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
+  );
+  const categoryByNormalizedName = useMemo(
+    () =>
+      new Map(
+        categories.map((category) => [
+          normalizeCategoryName(category.name),
+          category,
+        ]),
+      ),
+    [categories],
+  );
 
-    return new Set(selectedValues);
-  }, [categoryNameByNormalized, searchParams]);
+  const categoryIdParam = parsePositiveInteger(searchParams.get("categoryId"));
+  const categoryNameParam = searchParams.get("category") || "";
+  const normalizedCategoryNameParam = normalizeCategoryName(categoryNameParam);
 
-  const handleCategoryCheckedChange = (
-    categoryName: string,
-    nextChecked: boolean,
-  ) => {
+  const selectedCategoryFromId = categoryIdParam
+    ? categoryById.get(categoryIdParam) || null
+    : null;
+  const selectedCategoryFromName =
+    !selectedCategoryFromId && normalizedCategoryNameParam
+      ? categoryByNormalizedName.get(normalizedCategoryNameParam) || null
+      : null;
+
+  const selectedCategory = selectedCategoryFromId || selectedCategoryFromName;
+  const selectedCategoryId = selectedCategory?.id ?? null;
+  const effectiveCategoryId =
+    categoryIdParam ?? selectedCategoryFromName?.id ?? undefined;
+
+  const minRatingParam = parsePositiveInteger(searchParams.get("minRating"));
+  const selectedRating =
+    minRatingParam && minRatingParam >= 1 && minRatingParam <= 5
+      ? minRatingParam
+      : null;
+
+  const queryKeyword = searchParams.get("q")?.trim() || undefined;
+  const isCategoryResolutionPending =
+    Boolean(normalizedCategoryNameParam) &&
+    !categoryIdParam &&
+    isCategoriesLoading;
+
+  const {
+    data: booksData,
+    error: booksError,
+    fetchNextPage,
+    hasNextPage,
+    isError: isBooksError,
+    isFetchingNextPage,
+    isLoading: isBooksLoading,
+    refetch: refetchBooks,
+  } = useBooksInfiniteQuery({
+    q: queryKeyword,
+    categoryId: effectiveCategoryId,
+    minRating: selectedRating ?? undefined,
+    limit: 8,
+    enabled: !isCategoryResolutionPending,
+  });
+
+  const books = booksData?.pages.flatMap((page) => page.books) ?? [];
+  const isBooksLoadingState = isBooksLoading || isCategoryResolutionPending;
+
+  const createUrlWithParams = (params: URLSearchParams) => {
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
+
+  const handleCategoryCheckedChange = (categoryId: number, nextChecked: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    const currentSelectedSet = new Set(
-      params
-        .getAll("category")
-        .flatMap((value) => value.split(","))
-        .map((value) => normalizeCategoryName(value))
-        .filter((value) => value && categoryNameByNormalized.has(value)),
-    );
-
-    const normalizedName = normalizeCategoryName(categoryName);
     if (nextChecked) {
-      currentSelectedSet.add(normalizedName);
+      const selected = categories.find((category) => category.id === categoryId);
+      if (selected) {
+        params.set("category", selected.name);
+        params.set("categoryId", String(selected.id));
+      }
     } else {
-      currentSelectedSet.delete(normalizedName);
+      params.delete("category");
+      params.delete("categoryId");
     }
 
-    params.delete("category");
-    Array.from(currentSelectedSet)
-      .map((normalized) => categoryNameByNormalized.get(normalized) || normalized)
-      .sort((left, right) => left.localeCompare(right))
-      .forEach((name) => params.append("category", name));
+    params.delete("page");
+    router.replace(createUrlWithParams(params), { scroll: false });
+  };
 
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  const handleRatingCheckedChange = (rating: number, nextChecked: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextChecked) {
+      params.set("minRating", String(rating));
+    } else {
+      params.delete("minRating");
+    }
+
+    params.delete("page");
+    router.replace(createUrlWithParams(params), { scroll: false });
   };
 
   const categoriesErrorMessage =
@@ -256,7 +359,7 @@ export default function CategoryPage() {
 
         <div className="grid gap-4 lg:grid-cols-[266px_1fr] lg:gap-10 ">
           <aside className="hidden lg:block ">
-            <div className="grid gap-4 rounded-2xl  p-4 shadow-card">
+            <div className="grid gap-4 rounded-2xl p-4 shadow-card">
               <p className="text-sm md:text-md font-extrabold text-neutral-950">
                 FILTER
               </p>
@@ -266,49 +369,99 @@ export default function CategoryPage() {
                 isCategoriesError={isCategoriesError}
                 isCategoriesLoading={isCategoriesLoading}
                 onCategoryCheckedChange={handleCategoryCheckedChange}
+                onRatingCheckedChange={handleRatingCheckedChange}
                 onRetryCategories={() => refetchCategories()}
-                selectedCategorySet={selectedCategorySet}
+                selectedCategoryId={selectedCategoryId}
+                selectedRating={selectedRating}
               />
             </div>
           </aside>
 
           <section className="grid gap-3 lg:gap-4">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
-              {books.map((book) => (
-                <article
-                  className="grid gap-0 overflow-hidden rounded-xl  shadow-card"
-                  key={book.id}
+            {isBooksLoadingState ? <BooksSkeletonGrid /> : null}
+
+            {isBooksError ? (
+              <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
+                <p className="text-sm text-neutral-700 md:text-md">
+                  {(booksError as Error)?.message || "Gagal memuat daftar buku."}
+                </p>
+                <Button
+                  className="rounded-full"
+                  onClick={() => refetchBooks()}
+                  variant="outline"
                 >
-                  <Image
-                    alt={`${book.name} cover`}
-                    className="w-full object-cover md:h-84!"
-                    height={258}
-                    width={258}
-                    src={book.image}
-                  />
-                  <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
-                    <p className="text-sm font-bold text-neutral-950 lg:text-lg">
-                      {book.name}
-                    </p>
-                    <p className="text-sm text-neutral-700 lg:text-md">
-                      {book.author}
-                    </p>
-                    <div className="flex items-center gap-1 justi">
-                      <Image
-                        alt=""
-                        aria-hidden="true"
-                        height={24}
-                        src="/icon-star.svg"
-                        width={24}
-                      />
-                      <span className="text-sm text-neutral-700 lg:text-md font-semibold">
-                        {book.rating}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  Coba Lagi
+                </Button>
+              </div>
+            ) : null}
+
+            {!isBooksLoadingState && !isBooksError ? (
+              <>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+                  {books.map((book) => (
+                    <Link href={`/detail/${book.id}`} key={book.id}>
+                      <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt={`${book.title} cover`}
+                          className="h-[258px] w-full object-cover md:h-84"
+                          loading="lazy"
+                          onError={(event) => {
+                            const image = event.currentTarget;
+                            if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                              return;
+                            }
+                            image.src = DEFAULT_BOOK_COVER;
+                          }}
+                          src={getBookCoverSource(book.coverImage)}
+                        />
+                        <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                          <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                            {book.title}
+                          </p>
+                          <p className="text-sm text-neutral-700 lg:text-md">
+                            {book.author?.name || "Unknown author"}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            <Image
+                              alt=""
+                              aria-hidden="true"
+                              height={24}
+                              src="/icon-star.svg"
+                              width={24}
+                            />
+                            <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                              {formatRating(book.rating)}
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+
+                {books.length === 0 ? (
+                  <p className="text-center text-sm text-neutral-700 md:text-md">
+                    Tidak ada buku yang cocok dengan filter.
+                  </p>
+                ) : null}
+
+                <div className="flex items-center justify-center">
+                  <Button
+                    className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm font-bold text-neutral-950 shadow-none hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-50 md:text-md"
+                    disabled={isFetchingNextPage || !hasNextPage}
+                    onClick={() => fetchNextPage()}
+                    variant="outline"
+                  >
+                    {isFetchingNextPage
+                      ? "Loading..."
+                      : hasNextPage
+                        ? "Load More"
+                        : "No More Books"}
+                  </Button>
+                </div>
+              </>
+            ) : null}
           </section>
         </div>
       </main>
@@ -319,8 +472,10 @@ export default function CategoryPage() {
         isCategoriesError={isCategoriesError}
         isCategoriesLoading={isCategoriesLoading}
         onCategoryCheckedChange={handleCategoryCheckedChange}
+        onRatingCheckedChange={handleRatingCheckedChange}
         onRetryCategories={() => refetchCategories()}
-        selectedCategorySet={selectedCategorySet}
+        selectedCategoryId={selectedCategoryId}
+        selectedRating={selectedRating}
       />
     </SidebarProvider>
   );

@@ -134,6 +134,17 @@ type CategoriesResponse = {
   data: CategoriesData;
 };
 
+export type BooksListData = {
+  books: RecommendationBook[];
+  pagination: RecommendationPagination;
+};
+
+type BooksListResponse = {
+  success: boolean;
+  message: string;
+  data: BooksListData;
+};
+
 type BookDetailResponse = {
   success: boolean;
   message: string;
@@ -146,7 +157,24 @@ type FetchRecommendationPageParams = {
   limit: number;
 };
 
+type FetchBooksPageParams = {
+  q?: string;
+  categoryId?: number;
+  minRating?: number;
+  page: number;
+  limit: number;
+};
+
 export const tanstackQueryKeys = {
+  books: {
+    all: ["books"] as const,
+    list: (params: {
+      q: string | null;
+      categoryId: number | null;
+      minRating: number | null;
+      limit: number;
+    }) => [...tanstackQueryKeys.books.all, params] as const,
+  },
   recommendation: {
     all: ["recommendation"] as const,
     list: (params: { by: string; limit: number }) =>
@@ -184,6 +212,76 @@ export async function fetchRecommendationPage(
   }
 
   return response.data.data;
+}
+
+export async function fetchBooksPage(
+  params: FetchBooksPageParams,
+  signal?: AbortSignal,
+): Promise<BooksListData> {
+  const response = await tanstackApiClient.get<BooksListResponse>("/books", {
+    params,
+    signal,
+  });
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Gagal memuat daftar buku.");
+  }
+
+  return response.data.data;
+}
+
+type UseBooksInfiniteQueryParams = {
+  q?: string;
+  categoryId?: number;
+  minRating?: number;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useBooksInfiniteQuery({
+  q,
+  categoryId,
+  minRating,
+  limit = 8,
+  enabled = true,
+}: UseBooksInfiniteQueryParams = {}) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.books.list({
+      q: effectiveQ ?? null,
+      categoryId: categoryId ?? null,
+      minRating: minRating ?? null,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchBooksPage(
+        {
+          q: effectiveQ,
+          categoryId,
+          minRating,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+  });
 }
 
 type UseRecommendationInfiniteQueryParams = {
