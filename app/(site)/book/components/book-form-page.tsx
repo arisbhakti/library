@@ -105,7 +105,11 @@ function BookFormSkeleton() {
   );
 }
 
-function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps) {
+function BookFormContent({
+  mode,
+  bookId,
+  initialEditData,
+}: BookFormContentProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -114,11 +118,15 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
   const hasToken = Boolean(token);
 
   const [title, setTitle] = useState(() => initialEditData?.title ?? "");
-  const [authorInput, setAuthorInput] = useState(() => initialEditData?.authorInput ?? "");
+  const [authorInput, setAuthorInput] = useState(
+    () => initialEditData?.authorInput ?? "",
+  );
   const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(
     () => initialEditData?.selectedAuthor ?? null,
   );
-  const [categoryId, setCategoryId] = useState(() => initialEditData?.categoryId ?? "");
+  const [categoryId, setCategoryId] = useState(
+    () => initialEditData?.categoryId ?? "",
+  );
   const [numberOfPages, setNumberOfPages] = useState("");
   const [numberOfPagesError, setNumberOfPagesError] = useState("");
   const [description, setDescription] = useState(
@@ -163,10 +171,16 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     error: authorsError,
     isError: isAuthorsError,
     isFetching: isAuthorsFetching,
-  } = useAuthorsQuery(normalizedAuthorKeyword, normalizedAuthorKeyword.length > 0);
+  } = useAuthorsQuery(
+    normalizedAuthorKeyword,
+    normalizedAuthorKeyword.length > 0,
+  );
 
   const categoryOptions = categoriesData?.categories ?? [];
-  const authorOptions = useMemo(() => authorsData?.authors ?? [], [authorsData]);
+  const authorOptions = useMemo(
+    () => authorsData?.authors ?? [],
+    [authorsData],
+  );
 
   useEffect(() => {
     return () => {
@@ -179,7 +193,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
   const createBookMutation = useMutation({
     mutationFn: createBook,
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries({ queryKey: tanstackQueryKeys.adminBooks.all });
+      await queryClient.invalidateQueries({
+        queryKey: tanstackQueryKeys.adminBooks.all,
+      });
       showSuccessToast(response.message || "Book berhasil ditambahkan.");
       router.push("/list?tab=book-list");
     },
@@ -192,7 +208,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     mutationFn: updateBook,
     onSuccess: async (response) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: tanstackQueryKeys.adminBooks.all }),
+        queryClient.invalidateQueries({
+          queryKey: tanstackQueryKeys.adminBooks.all,
+        }),
         queryClient.invalidateQueries({
           queryKey: tanstackQueryKeys.bookDetail.detail(bookId ?? 0),
         }),
@@ -228,7 +246,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     setCoverError("");
   };
 
-  const handleInputFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -274,12 +294,15 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
       return;
     }
 
-    const matchedAuthor = authorOptions.find((author) => author.name === value) ?? null;
+    const matchedAuthor =
+      authorOptions.find((author) => author.name === value) ?? null;
     setSelectedAuthor(matchedAuthor);
     setAuthorInput(value);
   };
 
-  const handleNumberOfPagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNumberOfPagesChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const nextValue = event.target.value;
     if (numberRegex.test(nextValue)) {
       setNumberOfPages(nextValue);
@@ -290,7 +313,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     setNumberOfPagesError("Number of Pages hanya boleh berisi angka.");
   };
 
-  const handlePublishedYearChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePublishedYearChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const nextValue = event.target.value;
     if (numberRegex.test(nextValue)) {
       setPublishedYear(nextValue);
@@ -301,7 +326,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     setPublishedYearError("Published Year hanya boleh berisi angka.");
   };
 
-  const handleTotalCopiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTotalCopiesChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const nextValue = event.target.value;
     if (numberRegex.test(nextValue)) {
       setTotalCopies(nextValue);
@@ -312,7 +339,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     setTotalCopiesError("Total Copies hanya boleh berisi angka.");
   };
 
-  const handleAvailableCopiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvailableCopiesChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const nextValue = event.target.value;
     if (numberRegex.test(nextValue)) {
       setAvailableCopies(nextValue);
@@ -395,7 +424,10 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
       return;
     }
 
-    if (!Number.isInteger(normalizedPublishedYear) || normalizedPublishedYear <= 0) {
+    if (
+      !Number.isInteger(normalizedPublishedYear) ||
+      normalizedPublishedYear <= 0
+    ) {
       setPublishedYearError("Published Year wajib berupa angka lebih dari 0.");
       return;
     }
@@ -405,13 +437,20 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
       return;
     }
 
-    if (!Number.isInteger(normalizedAvailableCopies) || normalizedAvailableCopies < 0) {
-      setAvailableCopiesError("Available Copies wajib berupa angka 0 atau lebih.");
+    if (
+      !Number.isInteger(normalizedAvailableCopies) ||
+      normalizedAvailableCopies < 0
+    ) {
+      setAvailableCopiesError(
+        "Available Copies wajib berupa angka 0 atau lebih.",
+      );
       return;
     }
 
     if (normalizedAvailableCopies > normalizedTotalCopies) {
-      setAvailableCopiesError("Available Copies tidak boleh lebih besar dari Total Copies.");
+      setAvailableCopiesError(
+        "Available Copies tidak boleh lebih besar dari Total Copies.",
+      );
       return;
     }
 
@@ -430,12 +469,16 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
     });
   };
 
-  const isSubmitting = createBookMutation.isPending || updateBookMutation.isPending;
+  const isSubmitting =
+    createBookMutation.isPending || updateBookMutation.isPending;
 
   return (
     <main className="grid gap-6 px-4 py-4 lg:gap-8 lg:px-[120px] lg:py-8">
       <section className="grid w-full justify-items-center">
-        <form className="grid w-full gap-3 lg:w-[640px]" onSubmit={handleSubmit}>
+        <form
+          className="grid w-full gap-3 lg:w-[640px]"
+          onSubmit={handleSubmit}
+        >
           <Link
             className="flex w-fit items-center gap-2 text-neutral-950"
             href="/list?tab=book-list"
@@ -454,7 +497,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
           ) : null}
 
           <label className="grid gap-1">
-            <span className="text-md font-semibold text-neutral-950">Title</span>
+            <span className="text-md font-semibold text-neutral-950">
+              Title
+            </span>
             <Input
               className="h-14 rounded-2xl border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 shadow-none focus-visible:ring-0"
               onChange={(event) => setTitle(event.target.value)}
@@ -463,7 +508,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
           </label>
 
           <label className="grid gap-1">
-            <span className="text-md font-semibold text-neutral-950">Author</span>
+            <span className="text-md font-semibold text-neutral-950">
+              Author
+            </span>
             <Combobox
               inputValue={authorInput}
               onInputValueChange={handleAuthorInputChange}
@@ -471,7 +518,7 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
               value={selectedAuthor?.name ?? null}
             >
               <ComboboxInput
-                className="w-full rounded-2xl border-neutral-300 bg-neutral-25 [&_[data-slot=input-group-control]]:h-14 [&_[data-slot=input-group-control]]:px-4 [&_[data-slot=input-group-control]]:text-md [&_[data-slot=input-group-control]]:text-neutral-950"
+                className="w-full h-14 rounded-2xl border-neutral-300 bg-neutral-25 [&_[data-slot=input-group-control]]:h-14 [&_[data-slot=input-group-control]]:px-4 [&_[data-slot=input-group-control]]:text-md [&_[data-slot=input-group-control]]:text-neutral-950"
                 placeholder="Type author name"
                 showClear
               />
@@ -505,7 +552,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
           </label>
 
           <label className="grid gap-1">
-            <span className="text-md font-semibold text-neutral-950">Category</span>
+            <span className="text-md font-semibold text-neutral-950">
+              Category
+            </span>
             <div className="relative">
               <select
                 className="h-14 w-full appearance-none rounded-2xl border border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 outline-none"
@@ -513,7 +562,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
                 value={categoryId}
               >
                 <option value="">
-                  {isCategoriesLoading ? "Loading categories..." : "Select Category"}
+                  {isCategoriesLoading
+                    ? "Loading categories..."
+                    : "Select Category"}
                 </option>
                 {categoryOptions.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -525,7 +576,8 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
             </div>
             {isCategoriesError ? (
               <p className="text-xs text-danger-300">
-                {(categoriesError as Error)?.message || "Gagal memuat category."}
+                {(categoriesError as Error)?.message ||
+                  "Gagal memuat category."}
               </p>
             ) : null}
           </label>
@@ -533,7 +585,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
           {mode === "edit" ? (
             <>
               <label className="grid gap-1">
-                <span className="text-md font-semibold text-neutral-950">ISBN</span>
+                <span className="text-md font-semibold text-neutral-950">
+                  ISBN
+                </span>
                 <Input
                   className="h-14 rounded-2xl border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 shadow-none focus-visible:ring-0"
                   onChange={(event) => setIsbn(event.target.value)}
@@ -542,7 +596,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
               </label>
 
               <label className="grid gap-1">
-                <span className="text-md font-semibold text-neutral-950">Published Year</span>
+                <span className="text-md font-semibold text-neutral-950">
+                  Published Year
+                </span>
                 <Input
                   className="h-14 rounded-2xl border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 shadow-none focus-visible:ring-0"
                   inputMode="numeric"
@@ -552,12 +608,16 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
                   value={publishedYear}
                 />
                 {publishedYearError ? (
-                  <p className="text-xs text-danger-300">{publishedYearError}</p>
+                  <p className="text-xs text-danger-300">
+                    {publishedYearError}
+                  </p>
                 ) : null}
               </label>
 
               <label className="grid gap-1">
-                <span className="text-md font-semibold text-neutral-950">Total Copies</span>
+                <span className="text-md font-semibold text-neutral-950">
+                  Total Copies
+                </span>
                 <Input
                   className="h-14 rounded-2xl border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 shadow-none focus-visible:ring-0"
                   inputMode="numeric"
@@ -584,13 +644,17 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
                   value={availableCopies}
                 />
                 {availableCopiesError ? (
-                  <p className="text-xs text-danger-300">{availableCopiesError}</p>
+                  <p className="text-xs text-danger-300">
+                    {availableCopiesError}
+                  </p>
                 ) : null}
               </label>
             </>
           ) : (
             <label className="grid gap-1">
-              <span className="text-md font-semibold text-neutral-950">Number of Pages</span>
+              <span className="text-md font-semibold text-neutral-950">
+                Number of Pages
+              </span>
               <Input
                 className="h-14 rounded-2xl border-neutral-300 bg-neutral-25 px-4 text-md text-neutral-950 shadow-none focus-visible:ring-0"
                 inputMode="numeric"
@@ -606,7 +670,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
           )}
 
           <label className="grid gap-1">
-            <span className="text-md font-semibold text-neutral-950">Description</span>
+            <span className="text-md font-semibold text-neutral-950">
+              Description
+            </span>
             <Textarea
               className="h-[164px] w-full rounded-2xl border border-neutral-300 bg-neutral-25 px-4 py-3 text-md text-neutral-950 outline-none"
               onChange={(event) => setDescription(event.target.value)}
@@ -616,7 +682,9 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
 
           {mode === "add" ? (
             <div className="grid gap-1">
-              <span className="text-md font-semibold text-neutral-950">Cover Image</span>
+              <span className="text-md font-semibold text-neutral-950">
+                Cover Image
+              </span>
 
               <label
                 className={`grid min-h-[208px] w-full cursor-pointer justify-items-center gap-3 rounded-2xl border border-dashed bg-neutral-25 p-4 ${
@@ -686,14 +754,20 @@ function BookFormContent({ mode, bookId, initialEditData }: BookFormContentProps
                   </>
                 )}
 
-                <p className="text-md text-neutral-950">PNG or JPG (max. 5mb)</p>
+                <p className="text-md text-neutral-950">
+                  PNG or JPG (max. 5mb)
+                </p>
               </label>
 
-              {coverError ? <p className="text-md text-danger-300">{coverError}</p> : null}
+              {coverError ? (
+                <p className="text-md text-danger-300">{coverError}</p>
+              ) : null}
             </div>
           ) : (
             <div className="grid gap-1">
-              <span className="text-md font-semibold text-neutral-950">Cover Image</span>
+              <span className="text-md font-semibold text-neutral-950">
+                Cover Image
+              </span>
               <div className="flex items-center gap-4 rounded-2xl border border-neutral-300 bg-neutral-25 p-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -790,9 +864,13 @@ export function BookFormPage({ mode }: BookFormPageProps) {
             </Link>
             <div className="grid gap-3 rounded-2xl border border-neutral-300 bg-neutral-25 p-4">
               <p className="text-sm text-neutral-700">
-                {(bookDetailError as Error)?.message || "Gagal memuat detail buku."}
+                {(bookDetailError as Error)?.message ||
+                  "Gagal memuat detail buku."}
               </p>
-              <Button className="h-11 rounded-full" onClick={() => refetchBookDetail()}>
+              <Button
+                className="h-11 rounded-full"
+                onClick={() => refetchBookDetail()}
+              >
                 Coba Lagi
               </Button>
             </div>
@@ -802,9 +880,12 @@ export function BookFormPage({ mode }: BookFormPageProps) {
     );
   }
 
-  const initialEditData = mode === "edit" && bookDetail ? toInitialEditFormData(bookDetail) : null;
+  const initialEditData =
+    mode === "edit" && bookDetail ? toInitialEditFormData(bookDetail) : null;
   const formKey =
-    mode === "edit" && bookDetail ? `edit-${bookId}-${bookDetail.updatedAt}` : "add";
+    mode === "edit" && bookDetail
+      ? `edit-${bookId}-${bookDetail.updatedAt}`
+      : "add";
 
   return (
     <BookFormContent

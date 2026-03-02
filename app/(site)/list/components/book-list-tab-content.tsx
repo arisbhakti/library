@@ -1,9 +1,11 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { useAppToast } from "@/components/ui/app-toast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +18,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthToken } from "@/lib/auth";
 import {
   type AdminBookStatus,
+  deleteBook,
   type RecommendationBook,
+  tanstackQueryKeys,
   useAdminBooksInfiniteQuery,
 } from "@/lib/tanstack-api";
 
@@ -104,6 +108,8 @@ export function BookListTabContent() {
   const [activeFilter, setActiveFilter] = useState<AdminBookStatus>("all");
   const [deleteTarget, setDeleteTarget] = useState<RecommendationBook | null>(null);
 
+  const queryClient = useQueryClient();
+  const { showErrorToast, showSuccessToast } = useAppToast();
   const token = getAuthToken();
   const hasToken = Boolean(token);
   const debouncedSearchTerm = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS);
@@ -126,6 +132,35 @@ export function BookListTabContent() {
   });
 
   const books = data?.pages.flatMap((page) => page.books) ?? [];
+
+  const deleteBookMutation = useMutation({
+    mutationFn: deleteBook,
+    onSuccess: async (response) => {
+      setDeleteTarget(null);
+      showSuccessToast(response.message || "Book berhasil dihapus.");
+      await queryClient.invalidateQueries({ queryKey: tanstackQueryKeys.adminBooks.all });
+      await refetch();
+    },
+    onError: (mutationError) => {
+      showErrorToast(mutationError.message || "Gagal menghapus book.");
+    },
+  });
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    if (!hasToken || !token) {
+      showErrorToast("Sesi login tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
+    deleteBookMutation.mutate({
+      id: deleteTarget.id,
+      token,
+    });
+  };
 
   return (
     <section className="mt-3 grid gap-4 lg:gap-6">
@@ -314,6 +349,10 @@ export function BookListTabContent() {
 
       <Dialog
         onOpenChange={(open) => {
+          if (deleteBookMutation.isPending) {
+            return;
+          }
+
           if (!open) {
             setDeleteTarget(null);
           }
@@ -334,16 +373,19 @@ export function BookListTabContent() {
             <DialogClose asChild>
               <Button
                 className="h-11 rounded-full border border-neutral-300 bg-neutral-25 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+                disabled={deleteBookMutation.isPending}
                 variant="outline"
               >
                 Cancel
               </Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button className="h-11 rounded-full bg-danger-300 text-md font-semibold text-neutral-25 hover:bg-danger-300/90">
-                Confirm
-              </Button>
-            </DialogClose>
+            <Button
+              className="h-11 rounded-full bg-danger-300 text-md font-semibold text-neutral-25 hover:bg-danger-300/90 disabled:opacity-60"
+              disabled={deleteBookMutation.isPending}
+              onClick={handleConfirmDelete}
+            >
+              {deleteBookMutation.isPending ? "Deleting..." : "Confirm"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

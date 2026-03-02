@@ -561,6 +561,14 @@ export type UpdateBookResponse = {
   };
 };
 
+export type DeleteBookResponse = {
+  success: boolean;
+  message: string;
+  data?: {
+    id: number;
+  };
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -1697,6 +1705,39 @@ export async function updateBook(
     }
 
     throw new Error("Terjadi kesalahan saat memperbarui buku.");
+  }
+}
+
+export async function deleteBook(options: {
+  id: number;
+  token?: string | null;
+}): Promise<DeleteBookResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.delete<DeleteBookResponse>(
+      `/books/${options.id}`,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal menghapus buku.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<DeleteBookResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal menghapus buku.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat menghapus buku.");
   }
 }
 
