@@ -183,6 +183,22 @@ type CartResponse = {
   data?: CartData;
 };
 
+export type AddCartItemApiItem = {
+  id: number;
+  cartId: number;
+  bookId: number;
+  createdAt: string;
+  book: RecommendationBook;
+};
+
+type AddCartItemResponse = {
+  success: boolean;
+  message: string;
+  data?: {
+    item: AddCartItemApiItem;
+  };
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -581,6 +597,51 @@ export async function fetchCart(
     }
 
     throw new Error("Terjadi kesalahan saat memuat cart.");
+  }
+}
+
+export function normalizeCartItem(item: AddCartItemApiItem): CartItem {
+  return {
+    id: item.id,
+    bookId: item.bookId,
+    addedAt: item.createdAt,
+    book: item.book,
+  };
+}
+
+export async function addCartItem(options: {
+  bookId: number;
+  token?: string | null;
+}): Promise<AddCartItemResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.post<AddCartItemResponse>(
+      "/cart/items",
+      {
+        bookId: options.bookId,
+      },
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal menambahkan buku ke cart.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<AddCartItemResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal menambahkan buku ke cart.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat menambahkan buku ke cart.");
   }
 }
 

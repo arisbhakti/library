@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthToken } from "@/lib/auth";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { setCartState } from "@/lib/redux/cart-slice";
 import { useCartQuery } from "@/lib/tanstack-api";
 
 const FALLBACK_CART_TOKEN =
@@ -63,6 +65,7 @@ function CartItemSkeleton() {
 
 export default function CartPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [selectionState, setSelectionState] = useState<SelectionState>({
     mode: "all",
   });
@@ -75,6 +78,19 @@ export default function CartPage() {
     isLoading,
     refetch,
   } = useCartQuery({ token });
+
+  useEffect(() => {
+    if (!cartData) {
+      return;
+    }
+
+    dispatch(
+      setCartState({
+        itemCount: cartData.itemCount,
+        items: cartData.items,
+      }),
+    );
+  }, [cartData, dispatch]);
 
   const items = useMemo(() => cartData?.items ?? [], [cartData]);
   const hasItems = items.length > 0;

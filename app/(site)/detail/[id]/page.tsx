@@ -1,10 +1,12 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { useAppToast } from "@/components/ui/app-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -16,7 +18,15 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAuthToken } from "@/lib/auth";
+import { addCartItemOptimistic, setCartState } from "@/lib/redux/cart-slice";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { store } from "@/lib/redux/store";
 import {
+  addCartItem,
+  type CartData,
+  normalizeCartItem,
+  tanstackQueryKeys,
   useBookDetailQuery,
   useRecommendationInfiniteQuery,
 } from "@/lib/tanstack-api";
@@ -164,7 +174,16 @@ function RelatedBooksSkeletonGrid() {
   );
 }
 
+type AddToCartMutationContext = {
+  queryKey: readonly unknown[];
+  previousCart?: CartData;
+  previousReduxState: ReturnType<typeof store.getState>["cart"];
+};
+
 export default function DetailPage() {
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const { showErrorToast, showSuccessToast } = useAppToast();
   const params = useParams<{ id: string }>();
   const [reviewState, setReviewState] = useState<{
     bookId: number | null;
@@ -201,12 +220,166 @@ export default function DetailPage() {
     () => relatedBooksData?.pages[0]?.books.slice(0, 4) ?? [],
     [relatedBooksData],
   );
+  const addToCartMutation = useMutation<
+    Awaited<ReturnType<typeof addCartItem>>,
+    Error,
+    number,
+    AddToCartMutationContext
+  >({
+    mutationFn: async (selectedBookId) => {
+      const token = getAuthToken();
+
+      if (!token) {
+        throw new Error("Silakan login terlebih dahulu.");
+      }
+
+      return addCartItem({
+        bookId: selectedBookId,
+        token,
+      });
+    },
+    onMutate: async (selectedBookId) => {
+      const token = getAuthToken();
+      const queryKey = tanstackQueryKeys.cart.detail(token);
+      const previousCart = queryClient.getQueryData<CartData>(queryKey);
+      const previousReduxState = store.getState().cart;
+
+      await queryClient.cancelQueries({ queryKey });
+
+      if (!token) {
+        return {
+          queryKey,
+          previousCart,
+          previousReduxState,
+        };
+      }
+
+      if (book) {
+        const alreadyExists = previousCart?.items.some(
+          (item) => item.bookId === selectedBookId,
+        );
+
+        if (!alreadyExists) {
+          const optimisticItem = {
+            id: -(Date.now() + selectedBookId),
+            bookId: selectedBookId,
+            addedAt: new Date().toISOString(),
+            book: {
+              id: book.id,
+              title: book.title,
+              description: book.description,
+              isbn: book.isbn,
+              publishedYear: book.publishedYear,
+              coverImage: book.coverImage,
+              rating: book.rating,
+              reviewCount: book.reviewCount,
+              totalCopies: book.totalCopies,
+              availableCopies: book.availableCopies,
+              borrowCount: book.borrowCount,
+              authorId: book.authorId,
+              categoryId: book.categoryId,
+              createdAt: book.createdAt,
+              updatedAt: book.updatedAt,
+              author: book.author
+                ? {
+                    id: book.author.id,
+                    name: book.author.name,
+                  }
+                : undefined,
+              category: book.category
+                ? {
+                    id: book.category.id,
+                    name: book.category.name,
+                  }
+                : undefined,
+            },
+          };
+
+          const nextItems = [optimisticItem, ...(previousCart?.items ?? [])];
+
+          queryClient.setQueryData<CartData>(queryKey, {
+            cartId: previousCart?.cartId ?? 0,
+            items: nextItems,
+            itemCount: nextItems.length,
+          });
+
+          dispatch(addCartItemOptimistic(optimisticItem));
+        }
+      }
+
+      return {
+        queryKey,
+        previousCart,
+        previousReduxState,
+      };
+    },
+    onError: (error, _, context) => {
+      if (context) {
+        queryClient.setQueryData(context.queryKey, context.previousCart);
+        dispatch(
+          setCartState({
+            itemCount: context.previousReduxState.itemCount,
+            items: context.previousReduxState.items,
+          }),
+        );
+      }
+
+      showErrorToast(error.message || "Gagal menambahkan buku ke cart.");
+    },
+    onSuccess: (response, selectedBookId, context) => {
+      const queryKey =
+        context?.queryKey ?? tanstackQueryKeys.cart.detail(getAuthToken());
+      const normalizedItem = response.data?.item
+        ? normalizeCartItem(response.data.item)
+        : null;
+
+      queryClient.setQueryData<CartData>(queryKey, (currentCart) => {
+        const filteredItems = (currentCart?.items ?? []).filter(
+          (item) => item.bookId !== selectedBookId,
+        );
+        const nextItems = normalizedItem ? [normalizedItem, ...filteredItems] : filteredItems;
+
+        return {
+          cartId: response.data?.item?.cartId ?? currentCart?.cartId ?? 0,
+          items: nextItems,
+          itemCount: nextItems.length,
+        };
+      });
+
+      const latestCart = queryClient.getQueryData<CartData>(queryKey);
+
+      if (latestCart) {
+        dispatch(
+          setCartState({
+            itemCount: latestCart.itemCount,
+            items: latestCart.items,
+          }),
+        );
+      }
+
+      showSuccessToast(response.message || "Added to cart");
+    },
+    onSettled: (_, __, ___, context) => {
+      const queryKey =
+        context?.queryKey ?? tanstackQueryKeys.cart.detail(getAuthToken());
+      void queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
   const authorName = book?.author?.name || "Unknown author";
   const categoryName = book?.category?.name || "Unknown category";
   const visibleReviewCount = reviewState.bookId === bookId ? reviewState.count : 6;
   const visibleReviews = book?.reviews.slice(0, visibleReviewCount) ?? [];
   const hasMoreReviews = (book?.reviews.length ?? 0) > visibleReviewCount;
+  const isAddingToCart = addToCartMutation.isPending;
+
+  const handleAddToCart = () => {
+    if (!book) {
+      return;
+    }
+
+    addToCartMutation.mutate(book.id);
+  };
 
   if (bookId === null) {
     return (
@@ -364,9 +537,11 @@ export default function DetailPage() {
                 <div className="hidden w-fit gap-3 md:flex">
                   <Button
                     className="h-11 w-50 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100"
+                    disabled={isAddingToCart}
+                    onClick={handleAddToCart}
                     variant="outline"
                   >
-                    Add to Cart
+                    {isAddingToCart ? "Adding..." : "Add to Cart"}
                   </Button>
                   <Button className="h-11 w-50 rounded-full bg-primary-300 p-2 text-md font-bold text-neutral-25 hover:bg-primary-300/90">
                     Borrow Book
@@ -567,9 +742,11 @@ export default function DetailPage() {
         <div className="flex h-10 w-full gap-3">
           <Button
             className="h-10 flex-1 rounded-full border border-neutral-300 bg-neutral-25 text-md font-semibold text-neutral-950 shadow-none hover:bg-neutral-100"
+            disabled={!book || isAddingToCart}
+            onClick={handleAddToCart}
             variant="outline"
           >
-            Add to Cart
+            {isAddingToCart ? "Adding..." : "Add to Cart"}
           </Button>
           <Button className="h-10 flex-1 rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90">
             Borrow Book

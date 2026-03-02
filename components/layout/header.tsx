@@ -21,6 +21,9 @@ import {
   getAuthUser,
   type UserRole,
 } from "@/lib/auth";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { resetCartState, setCartState } from "@/lib/redux/cart-slice";
+import { useCartQuery } from "@/lib/tanstack-api";
 
 type HeaderProps = {
   isLoggedIn?: boolean;
@@ -152,11 +155,18 @@ function SearchField({
   );
 }
 
-function CartButton() {
+function CartButton({
+  itemCount,
+  onClick,
+}: {
+  itemCount: number;
+  onClick: () => void;
+}) {
   return (
     <button
       aria-label="Open cart"
       className="relative flex h-8 w-8 items-center justify-center"
+      onClick={onClick}
       type="button"
     >
       <Image
@@ -166,6 +176,11 @@ function CartButton() {
         src="/icon-shopping-bag.svg"
         width={28}
       />
+      {itemCount > 0 ? (
+        <span className="absolute -right-1 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary-300 px-1 text-[10px] font-bold leading-none text-neutral-25">
+          {itemCount > 99 ? "99+" : itemCount}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -233,6 +248,7 @@ function UserMenuItems({
 }
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
+  const dispatch = useAppDispatch();
   const [authView, setAuthView] = useState<AuthViewState>(() =>
     getAuthViewState(isLoggedIn),
   );
@@ -254,14 +270,40 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     pathname === segment || pathname.startsWith(`${segment}/`);
 
   const isAdmin = authView.role === "ADMIN";
+  const cartItemCount = useAppSelector((state) => state.cart.itemCount);
+  const cartToken = authView.isLoggedIn ? getAuthToken() : null;
+  const { data: cartData } = useCartQuery({
+    token: cartToken,
+    enabled: authView.isLoggedIn && !isAdmin && Boolean(cartToken),
+  });
   const isAdminLibraryPage =
     isAdmin &&
     (startsWithSegment("/list") ||
       startsWithSegment("/preview") ||
       startsWithSegment("/book"));
 
+  useEffect(() => {
+    if (!authView.isLoggedIn) {
+      dispatch(resetCartState());
+    }
+  }, [authView.isLoggedIn, dispatch]);
+
+  useEffect(() => {
+    if (!cartData) {
+      return;
+    }
+
+    dispatch(
+      setCartState({
+        itemCount: cartData.itemCount,
+        items: cartData.items,
+      }),
+    );
+  }, [cartData, dispatch]);
+
   const handleLogout = () => {
     clearAuthSession();
+    dispatch(resetCartState());
     setAuthView(getAuthViewState(false));
     setIsMobileGuestMenuOpen(false);
     setIsSearchOpen(false);
@@ -404,7 +446,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                   width={24}
                 />
               </button>
-              {authView.isLoggedIn && !isAdmin ? <CartButton /> : null}
+              {authView.isLoggedIn && !isAdmin ? (
+                <CartButton
+                  itemCount={cartItemCount}
+                  onClick={() => router.push("/cart")}
+                />
+              ) : null}
               {authView.isLoggedIn ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -500,7 +547,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
           ) : null}
           {authView.isLoggedIn ? (
             <div className="flex items-center gap-4">
-              {!isAdmin ? <CartButton /> : null}
+              {!isAdmin ? (
+                <CartButton
+                  itemCount={cartItemCount}
+                  onClick={() => router.push("/cart")}
+                />
+              ) : null}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2" type="button">

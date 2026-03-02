@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useAppToast } from "@/components/ui/app-toast";
 import { login, saveAuthSession } from "@/lib/auth";
 
 function EyeIcon() {
@@ -67,6 +68,7 @@ function validateLogin(values: FormValues): FormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showErrorToast, showSuccessToast } = useAppToast();
   const [formValues, setFormValues] = useState<FormValues>({
     email: "",
     password: "",
@@ -79,17 +81,21 @@ export default function LoginPage() {
     mutationFn: login,
     onSuccess: (response) => {
       if (!response.success || !response.data?.token) {
-        setErrors({ form: response.message || "Login gagal." });
+        const message = response.message || "Login gagal.";
+        setErrors({ form: message });
+        showErrorToast(message);
         setIsErrorAnimating(true);
         return;
       }
 
       saveAuthSession(response.data);
+      showSuccessToast(response.message || "Login berhasil.");
       setErrors({});
       router.push("/");
     },
     onError: (error) => {
       setErrors({ form: error.message });
+      showErrorToast(error.message);
       setIsErrorAnimating(true);
     },
   });
