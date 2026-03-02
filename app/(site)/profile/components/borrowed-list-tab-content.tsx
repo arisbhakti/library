@@ -1,8 +1,10 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
+import { useAppToast } from "@/components/ui/app-toast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +17,8 @@ import { getAuthToken } from "@/lib/auth";
 import {
   type MyLoan,
   type MyLoanStatusFilter,
+  returnLoan,
+  tanstackQueryKeys,
   useMyLoansInfiniteQuery,
 } from "@/lib/tanstack-api";
 
@@ -22,6 +26,7 @@ const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 const SEARCH_DEBOUNCE_MS = 400;
 
 type UiBorrowedStatus = "active" | "returned" | "overdue";
+type LoanAction = "return" | "review";
 
 const borrowedFilters: { label: string; value: MyLoanStatusFilter }[] = [
   { label: "All", value: "all" },
@@ -97,6 +102,20 @@ function resolveLoanStatus(loan: MyLoan): UiBorrowedStatus {
 function getLoanStatusLabel(loan: MyLoan, resolvedStatus: UiBorrowedStatus): string {
   const displayStatus = loan.displayStatus?.trim();
   return displayStatus || defaultStatusLabels[resolvedStatus];
+}
+
+function resolveLoanAction(status: string): LoanAction | null {
+  const normalizedStatus = status.trim().toUpperCase();
+
+  if (normalizedStatus === "BORROWED" || normalizedStatus === "LATE") {
+    return "return";
+  }
+
+  if (normalizedStatus === "RETURNED") {
+    return "review";
+  }
+
+  return null;
 }
 
 function formatDate(
@@ -209,6 +228,8 @@ function EmptyBorrowedState({
 }
 
 export function BorrowedListTabContent() {
+  const { showErrorToast, showSuccessToast } = useAppToast();
+  const queryClient = useQueryClient();
   const [borrowedFilter, setBorrowedFilter] = useState<MyLoanStatusFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
@@ -240,6 +261,28 @@ export function BorrowedListTabContent() {
     () => data?.pages.flatMap((page) => page.loans) ?? [],
     [data],
   );
+
+  const returnBookMutation = useMutation({
+    mutationFn: async ({ loanId }: { loanId: number }) => {
+      if (!token) {
+        throw new Error("Sesi login tidak ditemukan. Silakan login kembali.");
+      }
+
+      return returnLoan({
+        loanId,
+        token,
+      });
+    },
+    onSuccess: async (response) => {
+      showSuccessToast(response.message || "Return success");
+      await queryClient.invalidateQueries({
+        queryKey: tanstackQueryKeys.myLoans.all,
+      });
+    },
+    onError: (mutationError: Error) => {
+      showErrorToast(mutationError.message || "Return failed");
+    },
+  });
 
   const resetReviewForm = () => {
     setReviewRating(4);
@@ -337,6 +380,10 @@ export function BorrowedListTabContent() {
               {loans.map((loan) => {
                 const resolvedStatus = resolveLoanStatus(loan);
                 const statusLabel = getLoanStatusLabel(loan, resolvedStatus);
+                const loanAction = resolveLoanAction(loan.status);
+                const isReturningThisLoan =
+                  returnBookMutation.isPending &&
+                  returnBookMutation.variables?.loanId === loan.id;
 
                 return (
                   <article className="grid gap-3 rounded-3xl p-4 shadow-card" key={loan.id}>
@@ -400,13 +447,26 @@ export function BorrowedListTabContent() {
                         </div>
                       </div>
 
-                      <Button
-                        className="h-10 rounded-full bg-primary-300 px-10 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
-                        onClick={() => setIsReviewDialogOpen(true)}
-                        type="button"
-                      >
-                        Give Review
-                      </Button>
+                      {loanAction === "return" ? (
+                        <Button
+                          className="h-10 rounded-full bg-primary-300 px-10 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
+                          disabled={returnBookMutation.isPending}
+                          onClick={() => returnBookMutation.mutate({ loanId: loan.id })}
+                          type="button"
+                        >
+                          {isReturningThisLoan ? "Returning..." : "Return Book"}
+                        </Button>
+                      ) : null}
+
+                      {loanAction === "review" ? (
+                        <Button
+                          className="h-10 rounded-full bg-primary-300 px-10 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
+                          onClick={() => setIsReviewDialogOpen(true)}
+                          type="button"
+                        >
+                          Give Review
+                        </Button>
+                      ) : null}
                     </div>
                   </article>
                 );

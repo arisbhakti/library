@@ -271,6 +271,26 @@ type MyLoansResponse = {
   data?: MyLoansData;
 };
 
+export type ReturnLoan = {
+  id: number;
+  userId: number;
+  bookId: number;
+  status: string;
+  borrowedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+};
+
+export type ReturnLoanData = {
+  loan: ReturnLoan;
+};
+
+export type ReturnLoanResponse = {
+  success: boolean;
+  message: string;
+  data?: ReturnLoanData;
+};
+
 export type MyProfile = {
   id: number;
   name: string;
@@ -1057,6 +1077,39 @@ export async function borrowFromCart(options: {
     }
 
     throw new Error("Terjadi kesalahan saat memproses checkout.");
+  }
+}
+
+export async function returnLoan(options: {
+  loanId: number;
+  token?: string | null;
+}): Promise<ReturnLoanResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.patch<ReturnLoanResponse>(
+      `/loans/${options.loanId}/return`,
+      undefined,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Return failed");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<ReturnLoanResponse>(error)) {
+      const message = error.response?.data?.message || "Return failed";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat mengembalikan buku.");
   }
 }
 
