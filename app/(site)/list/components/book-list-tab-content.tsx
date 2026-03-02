@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,96 +12,124 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getAuthToken } from "@/lib/auth";
+import {
+  type AdminBookStatus,
+  type RecommendationBook,
+  useAdminBooksInfiniteQuery,
+} from "@/lib/tanstack-api";
 
-type BookStatus = "available" | "borrowed" | "returned" | "damaged";
+const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
+const SEARCH_DEBOUNCE_MS = 400;
+const BOOKS_PER_PAGE = 4;
 
-type BookFilter = "all" | BookStatus;
-
-type BookItem = {
-  id: number;
-  name: string;
-  author: string;
-  rating: string;
-  category: string;
-  status: BookStatus;
-  image: string;
-};
-
-const bookFilters: { label: string; value: BookFilter }[] = [
+const bookFilters: { label: string; value: AdminBookStatus }[] = [
   { label: "All", value: "all" },
   { label: "Available", value: "available" },
   { label: "Borrowed", value: "borrowed" },
   { label: "Returned", value: "returned" },
 ];
 
-const books: BookItem[] = [
-  {
-    id: 1,
-    name: "The Psychology of Money",
-    author: "Morgan Housel",
-    rating: "4.9",
-    category: "Business & Economics",
-    status: "available",
-    image: "/dummy-header-detail.png",
-  },
-  {
-    id: 2,
-    name: "The Psychology of Money",
-    author: "Morgan Housel",
-    rating: "4.9",
-    category: "Business & Economics",
-    status: "borrowed",
-    image: "/dummy-header-detail.png",
-  },
-  {
-    id: 3,
-    name: "The Psychology of Money",
-    author: "Morgan Housel",
-    rating: "4.9",
-    category: "Business & Economics",
-    status: "returned",
-    image: "/dummy-header-detail.png",
-  },
-  {
-    id: 4,
-    name: "The Psychology of Money",
-    author: "Morgan Housel",
-    rating: "4.9",
-    category: "Business & Economics",
-    status: "damaged",
-    image: "/dummy-header-detail.png",
-  },
-];
+function useDebouncedValue(value: string, delayMs: number): string {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
+}
+
+function formatRating(rating: number) {
+  const fixed = rating.toFixed(2);
+  return fixed.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function getBookCoverSource(coverImage?: string) {
+  if (!coverImage) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  const normalized = coverImage.trim();
+
+  if (!normalized) {
+    return DEFAULT_BOOK_COVER;
+  }
+
+  if (
+    normalized.startsWith("data:image/") ||
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("/") ||
+    normalized.startsWith("blob:")
+  ) {
+    return normalized;
+  }
+
+  return DEFAULT_BOOK_COVER;
+}
+
+function BookListItemSkeleton() {
+  return (
+    <article className="grid min-w-0 gap-3 rounded-3xl p-4 shadow-card lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="flex min-w-0 items-start gap-3">
+        <Skeleton className="h-[106px] w-[70px] md:h-34.5 md:w-23" />
+
+        <div className="grid min-w-0 content-start gap-2">
+          <Skeleton className="h-6 w-28 rounded-[6px]" />
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-5 w-44" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+      </div>
+
+      <div className="grid w-full grid-cols-3 gap-2 lg:flex lg:w-auto lg:items-center">
+        <Skeleton className="h-12 w-full rounded-full lg:w-[96px]" />
+        <Skeleton className="h-12 w-full rounded-full lg:w-[96px]" />
+        <Skeleton className="h-12 w-full rounded-full lg:w-[96px]" />
+      </div>
+    </article>
+  );
+}
 
 export function BookListTabContent() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<BookFilter>("all");
-  const [deleteTarget, setDeleteTarget] = useState<BookItem | null>(null);
+  const [activeFilter, setActiveFilter] = useState<AdminBookStatus>("all");
+  const [deleteTarget, setDeleteTarget] = useState<RecommendationBook | null>(null);
 
-  const filteredBooks = useMemo(() => {
-    const byFilter =
-      activeFilter === "all"
-        ? books
-        : books.filter((book) => book.status === activeFilter);
+  const token = getAuthToken();
+  const hasToken = Boolean(token);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS);
 
-    if (!searchTerm.trim()) {
-      return byFilter;
-    }
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+  } = useAdminBooksInfiniteQuery({
+    token,
+    status: activeFilter,
+    q: debouncedSearchTerm,
+    limit: BOOKS_PER_PAGE,
+    enabled: hasToken,
+  });
 
-    const query = searchTerm.toLowerCase();
-    return byFilter.filter(
-      (book) =>
-        book.name.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query) ||
-        book.category.toLowerCase().includes(query),
-    );
-  }, [activeFilter, searchTerm]);
+  const books = data?.pages.flatMap((page) => page.books) ?? [];
 
   return (
-    <section className="grid gap-4 lg:gap-6 mt-3">
-      <h1 className="text-display-sm font-extrabold text-neutral-950 ">
-        Book List
-      </h1>
+    <section className="mt-3 grid gap-4 lg:gap-6">
+      <h1 className="text-display-sm font-extrabold text-neutral-950 ">Book List</h1>
 
       <Button
         asChild
@@ -110,7 +138,7 @@ export function BookListTabContent() {
         <Link href="/book">Add Book</Link>
       </Button>
 
-      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4 lg:w-[560px]">
+      <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300 px-4 lg:w-[560px]">
         <Image
           alt=""
           aria-hidden="true"
@@ -119,7 +147,7 @@ export function BookListTabContent() {
           width={20}
         />
         <input
-          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500 "
+          className="h-full w-full bg-transparent text-sm text-neutral-950 outline-none placeholder:text-neutral-500"
           onChange={(event) => setSearchTerm(event.target.value)}
           placeholder="Search book"
           type="text"
@@ -148,72 +176,141 @@ export function BookListTabContent() {
         })}
       </div>
 
-      <div className="grid gap-3 lg:gap-4">
-        {filteredBooks.map((book) => (
-          <article
-            className="grid min-w-0 gap-3 rounded-3xl shadow-card p-4 lg:grid-cols-[1fr_auto] lg:items-center"
-            key={book.id}
-          >
-            <div className="flex min-w-0 items-start gap-3">
-              <Image
-                alt={`${book.name} cover`}
-                className="md:w-23 md:h-34.5"
-                width={70}
-                height={106}
-                src={book.image}
-              />
+      {!hasToken ? (
+        <div className="grid h-48 place-items-center rounded-3xl border border-neutral-200 bg-neutral-25 px-4 text-center">
+          <p className="text-md text-neutral-600">
+            Sesi login tidak ditemukan. Silakan login ulang.
+          </p>
+        </div>
+      ) : null}
 
-              <div className="grid min-w-0 content-start gap-1">
-                <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2 py-0">
-                  <span className="text-sm font-bold text-neutral-950">
-                    {book.category}
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-neutral-950 ">
-                  {book.name}
-                </p>
-                <p className="text-md text-neutral-700">{book.author}</p>
-                <div className="flex items-center gap-1">
-                  <Image
-                    alt=""
-                    aria-hidden="true"
-                    height={24}
-                    src="/icon-star.svg"
-                    width={24}
+      {hasToken && isLoading ? (
+        <div className="grid gap-3 lg:gap-4">
+          {Array.from({ length: 4 }, (_, index) => (
+            <BookListItemSkeleton key={`book-list-skeleton-${index}`} />
+          ))}
+        </div>
+      ) : null}
+
+      {hasToken && isError ? (
+        <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
+          <p className="text-sm text-neutral-700 md:text-md">
+            {(error as Error)?.message || "Gagal memuat daftar buku admin."}
+          </p>
+          <Button className="rounded-full" onClick={() => refetch()} variant="outline">
+            Coba Lagi
+          </Button>
+        </div>
+      ) : null}
+
+      {hasToken && !isLoading && !isError ? (
+        <>
+          <div className="grid gap-3 lg:gap-4">
+            {books.map((book) => (
+              <article
+                className="grid min-w-0 gap-3 rounded-3xl p-4 shadow-card lg:grid-cols-[1fr_auto] lg:items-center"
+                key={book.id}
+              >
+                <div className="flex min-w-0 items-start gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={`${book.title} cover`}
+                    className="h-[106px] w-[70px] object-cover md:h-34.5 md:w-23"
+                    loading="lazy"
+                    onError={(event) => {
+                      const image = event.currentTarget;
+                      if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                        return;
+                      }
+                      image.src = DEFAULT_BOOK_COVER;
+                    }}
+                    src={getBookCoverSource(book.coverImage)}
                   />
-                  <span className="text-md font-bold text-neutral-950">
-                    {book.rating}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            <div className="grid w-full grid-cols-3 gap-2 lg:flex lg:w-auto lg:items-center">
+                  <div className="grid min-w-0 content-start gap-1">
+                    <div className="inline-flex w-fit items-center rounded-[6px] border border-neutral-300 px-2 py-0">
+                      <span className="text-sm font-bold text-neutral-950">
+                        {book.category?.name || "Unknown category"}
+                      </span>
+                    </div>
+                    <p className="line-clamp-2 text-lg font-bold text-neutral-950">
+                      {book.title}
+                    </p>
+                    <p className="text-md text-neutral-700">
+                      {book.author?.name || "Unknown author"}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        height={24}
+                        src="/icon-star.svg"
+                        width={24}
+                      />
+                      <span className="text-md font-bold text-neutral-950">
+                        {formatRating(book.rating)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid w-full grid-cols-3 gap-2 lg:flex lg:w-auto lg:items-center">
+                  <Button
+                    asChild
+                    className="h-12 rounded-full border border-neutral-300 bg-neutral-25 p-2 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
+                    variant="outline"
+                  >
+                    <Link href={`/preview/${book.id}`}>Preview</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    className="h-12 rounded-full border border-neutral-300 bg-neutral-25 p-2 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
+                    variant="outline"
+                  >
+                    <Link href={`/book/${book.id}`}>Edit</Link>
+                  </Button>
+                  <Button
+                    className="h-12 rounded-full border border-neutral-300 bg-neutral-25 p-2 px-5 text-md font-bold text-danger-300 shadow-none hover:bg-danger-300/10 lg:w-[96px]"
+                    onClick={() => setDeleteTarget(book)}
+                    variant="outline"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {isFetchingNextPage ? (
+            <div className="grid gap-3 lg:gap-4">
+              {Array.from({ length: 2 }, (_, index) => (
+                <BookListItemSkeleton key={`book-list-next-skeleton-${index}`} />
+              ))}
+            </div>
+          ) : null}
+
+          {books.length === 0 ? (
+            <p className="rounded-2xl border border-neutral-200 bg-neutral-25 px-4 py-8 text-center text-sm text-neutral-700 md:text-md">
+              Belum ada buku yang cocok dengan filter dan pencarian.
+            </p>
+          ) : (
+            <div className="flex items-center justify-center">
               <Button
-                asChild
-                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
+                className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm font-bold text-neutral-950 shadow-none hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-50 md:text-md"
+                disabled={isFetchingNextPage || !hasNextPage}
+                onClick={() => fetchNextPage()}
                 variant="outline"
               >
-                <Link href={`/preview/${book.id}`}>Preview</Link>
-              </Button>
-              <Button
-                asChild
-                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100 lg:w-[96px]"
-                variant="outline"
-              >
-                <Link href={`/book/${book.id}`}>Edit</Link>
-              </Button>
-              <Button
-                className="h-12 p-2 rounded-full border border-neutral-300 bg-neutral-25 px-5 text-md font-bold text-danger-300 shadow-none hover:bg-danger-300/10 lg:w-[96px]"
-                onClick={() => setDeleteTarget(book)}
-                variant="outline"
-              >
-                Delete
+                {isFetchingNextPage
+                  ? "Loading..."
+                  : hasNextPage
+                    ? "Load More"
+                    : "No More Books"}
               </Button>
             </div>
-          </article>
-        ))}
-      </div>
+          )}
+        </>
+      ) : null}
 
       <Dialog
         onOpenChange={(open) => {

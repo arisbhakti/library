@@ -428,6 +428,19 @@ type AdminUsersResponse = {
   data?: AdminUsersData;
 };
 
+export type AdminBookStatus = "all" | "available" | "borrowed" | "returned";
+
+export type AdminBooksData = {
+  books: RecommendationBook[];
+  pagination: RecommendationPagination;
+};
+
+type AdminBooksResponse = {
+  success: boolean;
+  message: string;
+  data?: AdminBooksData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -464,6 +477,14 @@ type FetchMyReviewsPageParams = {
 };
 
 type FetchAdminUsersPageParams = {
+  q?: string;
+  page: number;
+  limit: number;
+  token?: string | null;
+};
+
+type FetchAdminBooksPageParams = {
+  status: AdminBookStatus;
   q?: string;
   page: number;
   limit: number;
@@ -543,6 +564,15 @@ export const tanstackQueryKeys = {
       page: number;
       limit: number;
     }) => [...tanstackQueryKeys.adminUsers.all, params] as const,
+  },
+  adminBooks: {
+    all: ["admin-books"] as const,
+    list: (params: {
+      token: string | null;
+      status: AdminBookStatus;
+      q: string | null;
+      limit: number;
+    }) => [...tanstackQueryKeys.adminBooks.all, params] as const,
   },
 };
 
@@ -656,6 +686,101 @@ export function useAdminUsersQuery({
         signal,
       ),
     enabled,
+  });
+}
+
+export async function fetchAdminBooksPage(
+  params: FetchAdminBooksPageParams,
+  signal?: AbortSignal,
+): Promise<AdminBooksData> {
+  try {
+    const token = params.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<AdminBooksResponse>(
+      "/admin/books",
+      {
+        signal,
+        params: {
+          status: params.status,
+          ...(params.q ? { q: params.q } : {}),
+          page: params.page,
+          limit: params.limit,
+        },
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat daftar buku admin.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<AdminBooksResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal memuat daftar buku admin.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat daftar buku admin.");
+  }
+}
+
+type UseAdminBooksInfiniteQueryParams = {
+  token?: string | null;
+  status: AdminBookStatus;
+  q?: string;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useAdminBooksInfiniteQuery({
+  token,
+  status,
+  q,
+  limit = 4,
+  enabled = true,
+}: UseAdminBooksInfiniteQueryParams) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.adminBooks.list({
+      token: token ?? null,
+      status,
+      q: effectiveQ ?? null,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchAdminBooksPage(
+        {
+          token,
+          status,
+          q: effectiveQ,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
   });
 }
 
