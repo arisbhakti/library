@@ -306,7 +306,7 @@ export default function HomePage() {
                   </Link>
                   <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
                     <Link href={`/detail/${book.id}`}>
-                      <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                      <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
                         {book.title}
                       </p>
                     </Link>
@@ -402,7 +402,7 @@ export default function HomePage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid gap-0.5">
-                      <p className="text-md font-bold text-neutral-950 md:text-lg">
+                      <p className="text-md font-bold text-neutral-950 md:text-lg line-clamp-1">
                         {author.name}
                       </p>
                       <div className="flex items-center gap-1.5">
