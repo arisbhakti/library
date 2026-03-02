@@ -164,6 +164,25 @@ type BookDetailResponse = {
   data: BookDetail;
 };
 
+export type CartItem = {
+  id: number;
+  bookId: number;
+  addedAt: string;
+  book: RecommendationBook;
+};
+
+export type CartData = {
+  cartId: number;
+  items: CartItem[];
+  itemCount: number;
+};
+
+type CartResponse = {
+  success: boolean;
+  message: string;
+  data?: CartData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -216,6 +235,11 @@ export const tanstackQueryKeys = {
   bookDetail: {
     all: ["book-detail"] as const,
     detail: (id: number) => [...tanstackQueryKeys.bookDetail.all, id] as const,
+  },
+  cart: {
+    all: ["cart"] as const,
+    detail: (token: string | null) =>
+      [...tanstackQueryKeys.cart.all, token ?? ""] as const,
   },
 };
 
@@ -525,5 +549,59 @@ export function useBookDetailQuery(id: number | null) {
       return fetchBookDetail(id, signal);
     },
     enabled: typeof id === "number" && Number.isFinite(id) && id > 0,
+  });
+}
+
+export async function fetchCart(
+  options?: {
+    token?: string | null;
+  },
+  signal?: AbortSignal,
+): Promise<CartData> {
+  try {
+    const token = options?.token?.trim() ?? "";
+    const response = await tanstackApiClient.get<CartResponse>("/cart", {
+      signal,
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat cart.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<CartResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memuat cart.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat cart.");
+  }
+}
+
+export function useCartQuery(
+  options?: {
+    token?: string | null;
+    enabled?: boolean;
+  },
+) {
+  const token = options?.token ?? null;
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: tanstackQueryKeys.cart.detail(token),
+    queryFn: ({ signal }) =>
+      fetchCart(
+        {
+          token,
+        },
+        signal,
+      ),
+    enabled,
   });
 }

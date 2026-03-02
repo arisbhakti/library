@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Logged in",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ODIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzcyNDU0MTEzLCJleHAiOjE3NzMwNTg5MTN9.SxWTBN7WDjYhFO_P6vJdXizp_pwttIOi1lFvWd-VxeA",
+    "user": {
+      "id": 82,
+      "name": "kaya",
+      "email": "kaya@kaya.com",
+      "phone": "081333363888",
+      "profilePhoto": null,
+      "role": "USER"
+    }
+  }
+}
