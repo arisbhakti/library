@@ -5,9 +5,6 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
-  FlaskConical,
-  Landmark,
-  RefreshCcw,
   Rocket,
   Sparkles,
 } from "lucide-react";
@@ -40,10 +37,7 @@ const CATEGORY_ICON_MAP: Record<string, CategoryIconConfig> = {
   science: { type: "image", src: "/category-science.svg" },
   education: { type: "image", src: "/category-education.svg" },
   lifestyle: { type: "icon", Icon: Sparkles },
-  religious: { type: "icon", Icon: Landmark },
   "science-fiction": { type: "icon", Icon: Rocket },
-  "test category api": { type: "icon", Icon: FlaskConical },
-  "updated category api": { type: "icon", Icon: RefreshCcw },
 };
 
 const DEFAULT_CATEGORY_ICON: CategoryIconConfig = {
@@ -240,7 +234,7 @@ export default function HomePage() {
                       ) : (
                         <icon.Icon
                           aria-hidden="true"
-                          className="h-11 w-11 text-primary-600 md:h-[51.2px] md:w-[51.2px]"
+                          className="h-11 w-11 text-[#1E3A8A] md:h-[51.2px] md:w-[51.2px]"
                         />
                       )}
                     </div>

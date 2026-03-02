@@ -1,5 +1,8 @@
-perlu kamu ingat bahwa category ini sifat nya sangat dinamis, jadi bisa saja nanti suatu saat nama category nya berubah
+nah sekarang , bikin ketika user klik salah satu kategori , makan user akan di lemparkan ke page /category
 
-intinya category harus selalu di load dari API , dan ketika nama dan icon nya tidak cocok , maka gunakan default icon saja
+dan pada page /category , load semua kategori dari API yang nanti data nya digunakan sebagai filter
 
-lalu semua icon yang dari lucide-react , tolong ganti warna nya jadi biru tua , warna yang sekarang cuma hitam dan tidak cocok di UI
+lalu misalnya user klik kategory "Fiction" pada page /home, maka pada page /category otomatis checkbox "Fiction" akan aktif (kecentang)
+
+dan juga misalnya user klik kategori pada bagian breadcrumbs di page /detail/id ,maka user akan di lempar ke page /category dengan checkbox kategori yang di klik pada breadcrumbs tersebut otomatis aktif (kecentang)
+
