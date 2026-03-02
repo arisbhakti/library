@@ -10,7 +10,7 @@ export default function PreviewPage() {
       <main className="grid gap-4 px-4 pb-24 pt-4 lg:gap-6 lg:px-30 lg:pb-20 lg:pt-8">
         <Link
           className="flex w-fit items-center gap-2 text-neutral-950"
-          href="/list?role=admin"
+          href="/list"
         >
           <ArrowLeft className="size-6 md:size-7" />
           <span className="display-xs md:display-sm font-bold">Preview Book</span>

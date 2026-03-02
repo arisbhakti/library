@@ -407,6 +407,27 @@ type UpdateMyProfileResponse = {
   data?: MyProfileData;
 };
 
+export type AdminUser = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  profilePhoto: string | null;
+  role: string;
+  createdAt: string;
+};
+
+export type AdminUsersData = {
+  users: AdminUser[];
+  pagination: RecommendationPagination;
+};
+
+type AdminUsersResponse = {
+  success: boolean;
+  message: string;
+  data?: AdminUsersData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -436,6 +457,13 @@ type FetchMyLoansPageParams = {
 };
 
 type FetchMyReviewsPageParams = {
+  q?: string;
+  page: number;
+  limit: number;
+  token?: string | null;
+};
+
+type FetchAdminUsersPageParams = {
   q?: string;
   page: number;
   limit: number;
@@ -507,6 +535,15 @@ export const tanstackQueryKeys = {
       limit: number;
     }) => [...tanstackQueryKeys.myReviews.all, params] as const,
   },
+  adminUsers: {
+    all: ["admin-users"] as const,
+    list: (params: {
+      token: string | null;
+      q: string | null;
+      page: number;
+      limit: number;
+    }) => [...tanstackQueryKeys.adminUsers.all, params] as const,
+  },
 };
 
 export async function fetchRecommendationPage(
@@ -542,6 +579,84 @@ export async function fetchBooksPage(
   }
 
   return response.data.data;
+}
+
+export async function fetchAdminUsersPage(
+  params: FetchAdminUsersPageParams,
+  signal?: AbortSignal,
+): Promise<AdminUsersData> {
+  try {
+    const token = params.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<AdminUsersResponse>(
+      "/admin/users",
+      {
+        signal,
+        params: {
+          ...(params.q ? { q: params.q } : {}),
+          page: params.page,
+          limit: params.limit,
+        },
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat daftar user.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<AdminUsersResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memuat daftar user.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat daftar user.");
+  }
+}
+
+type UseAdminUsersQueryParams = {
+  token?: string | null;
+  q?: string;
+  page: number;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useAdminUsersQuery({
+  token,
+  q,
+  page,
+  limit = 10,
+  enabled = true,
+}: UseAdminUsersQueryParams) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useQuery({
+    queryKey: tanstackQueryKeys.adminUsers.list({
+      token: token ?? null,
+      q: effectiveQ ?? null,
+      page,
+      limit,
+    }),
+    queryFn: ({ signal }) =>
+      fetchAdminUsersPage(
+        {
+          token,
+          q: effectiveQ,
+          page,
+          limit,
+        },
+        signal,
+      ),
+    enabled,
+  });
 }
 
 export async function fetchAuthorBooksPage(

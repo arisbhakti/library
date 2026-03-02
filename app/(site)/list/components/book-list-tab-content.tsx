@@ -32,7 +32,6 @@ const bookFilters: { label: string; value: BookFilter }[] = [
   { label: "Available", value: "available" },
   { label: "Borrowed", value: "borrowed" },
   { label: "Returned", value: "returned" },
-  { label: "Damaged", value: "damaged" },
 ];
 
 const books: BookItem[] = [
