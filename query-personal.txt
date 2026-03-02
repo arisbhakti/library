@@ -1,0 +1,40 @@
+
+
+buatkan saya fungsi register pada page /register dengan menggunakan axios atau tanstack query yang sudah saya install
+
+berikut adalah URL untuk untuk register dengan menggunkan curl method POST :
+
+curl -X 'POST' \
+  'https://library-backend-production-b9cf.up.railway.app/api/auth/register' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "kaya",
+  "email": "kaya@kaya.com",
+  "phone": "081333363888",
+  "password": "kaya123"
+}'
+
+error message nya akan seperti ini :
+{
+  "success": false,
+  "message": "Email already used"
+}
+
+kalau login berhasil, response nya akan seperti ini :
+{
+  "success": true,
+  "message": "Registered",
+  "data": {
+    "id": 83,
+    "name": "konglo",
+    "email": "konglo@konglo.com",
+    "phone": "081333363888",
+    "profilePhoto": null,
+    "role": "USER"
+  }
+}
+
+tolong samakan behaviour nya dengan /login seperti animasi , error handling, dan lain-lain
+
+
