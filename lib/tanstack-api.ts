@@ -105,6 +105,17 @@ export type PopularAuthorsData = {
   authors: PopularAuthor[];
 };
 
+export type Category = {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CategoriesData = {
+  categories: Category[];
+};
+
 type RecommendationResponse = {
   success: boolean;
   message: string;
@@ -115,6 +126,12 @@ type PopularAuthorsResponse = {
   success: boolean;
   message: string;
   data: PopularAuthorsData;
+};
+
+type CategoriesResponse = {
+  success: boolean;
+  message: string;
+  data: CategoriesData;
 };
 
 type BookDetailResponse = {
@@ -139,6 +156,10 @@ export const tanstackQueryKeys = {
     all: ["popular-authors"] as const,
     list: (params: { limit: number }) =>
       [...tanstackQueryKeys.popularAuthors.all, params] as const,
+  },
+  categories: {
+    all: ["categories"] as const,
+    list: () => [...tanstackQueryKeys.categories.all] as const,
   },
   bookDetail: {
     all: ["book-detail"] as const,
@@ -255,6 +276,27 @@ export function usePopularAuthorsInfiniteQuery({
 
       return page + 1;
     },
+  });
+}
+
+export async function fetchCategories(
+  signal?: AbortSignal,
+): Promise<CategoriesData> {
+  const response = await tanstackApiClient.get<CategoriesResponse>("/categories", {
+    signal,
+  });
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Gagal memuat categories.");
+  }
+
+  return response.data.data;
+}
+
+export function useCategoriesQuery() {
+  return useQuery({
+    queryKey: tanstackQueryKeys.categories.list(),
+    queryFn: ({ signal }) => fetchCategories(signal),
   });
 }
 

@@ -2,27 +2,73 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  FlaskConical,
+  Landmark,
+  RefreshCcw,
+  Rocket,
+  Sparkles,
+} from "lucide-react";
 
 import { HomeCarousel } from "@/components/home/home-carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  useCategoriesQuery,
   usePopularAuthorsInfiniteQuery,
   useRecommendationInfiniteQuery,
 } from "@/lib/tanstack-api";
 
-const categories = [
-  { icon: "/category-fiction.svg", name: "Fiction" },
-  { icon: "/category-non-fiction.svg", name: "Non-Fiction" },
-  { icon: "/category-self-improvement.svg", name: "Self-Improvement" },
-  { icon: "/category-finance.svg", name: "Finance" },
-  { icon: "/category-science.svg", name: "Science" },
-  { icon: "/category-education.svg", name: "Education" },
-];
+type CategoryIconConfig =
+  | {
+      type: "image";
+      src: string;
+    }
+  | {
+      type: "icon";
+      Icon: LucideIcon;
+    };
+
+const CATEGORY_ICON_MAP: Record<string, CategoryIconConfig> = {
+  fiction: { type: "image", src: "/category-fiction.svg" },
+  "non-fiction": { type: "image", src: "/category-non-fiction.svg" },
+  "self-improvement": { type: "image", src: "/category-self-improvement.svg" },
+  finance: { type: "image", src: "/category-finance.svg" },
+  science: { type: "image", src: "/category-science.svg" },
+  education: { type: "image", src: "/category-education.svg" },
+  lifestyle: { type: "icon", Icon: Sparkles },
+  religious: { type: "icon", Icon: Landmark },
+  "science-fiction": { type: "icon", Icon: Rocket },
+  "test category api": { type: "icon", Icon: FlaskConical },
+  "updated category api": { type: "icon", Icon: RefreshCcw },
+};
+
+const DEFAULT_CATEGORY_ICON: CategoryIconConfig = {
+  type: "icon",
+  Icon: BookOpen,
+};
 
 const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 const DEFAULT_AUTHOR_AVATAR = "/dummy-avatar.png";
+
+function CategoriesSkeletonGrid() {
+  return (
+    <div className="grid grid-cols-3 gap-3 lg:grid-cols-6 lg:gap-4">
+      {Array.from({ length: 6 }, (_, index) => (
+        <article
+          className="grid gap-2 rounded-2xl p-2 shadow-card lg:p-3"
+          key={`category-skeleton-${index}`}
+        >
+          <Skeleton className="h-14 w-full rounded-xl md:h-16" />
+          <Skeleton className="h-4 w-4/5" />
+        </article>
+      ))}
+    </div>
+  );
+}
 
 function RecommendationSkeletonGrid() {
   return (
@@ -105,7 +151,25 @@ function getAuthorFallback(name: string) {
   return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
 }
 
+function getCategoryIcon(name: string): CategoryIconConfig {
+  const normalized = name.trim().toLowerCase();
+  if (!normalized) {
+    return DEFAULT_CATEGORY_ICON;
+  }
+
+  return CATEGORY_ICON_MAP[normalized] ?? DEFAULT_CATEGORY_ICON;
+}
+
 export default function HomePage() {
+  const {
+    data: categoriesData,
+    error: categoriesError,
+    isError: isCategoriesError,
+    isLoading: isCategoriesLoading,
+    refetch: refetchCategories,
+  } = useCategoriesQuery();
+  const categories = categoriesData?.categories ?? [];
+
   const {
     data,
     error,
@@ -136,27 +200,65 @@ export default function HomePage() {
       <HomeCarousel />
 
       <section className="grid gap-3 lg:gap-4">
-        <div className="grid grid-cols-3 gap-3 lg:grid-cols-6 lg:gap-4">
-          {categories.map((category) => (
-            <article
-              className="grid gap-2 rounded-2xl p-2 shadow-card lg:p-3"
-              key={category.name}
+        {isCategoriesLoading ? <CategoriesSkeletonGrid /> : null}
+
+        {isCategoriesError ? (
+          <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
+            <p className="text-sm text-neutral-700 md:text-md">
+              {(categoriesError as Error)?.message || "Gagal memuat kategori."}
+            </p>
+            <Button
+              className="rounded-full"
+              onClick={() => refetchCategories()}
+              variant="outline"
             >
-              <div className="flex items-center justify-center rounded-xl bg-primary-50 p-[5.6px] md:p-[6.4px]">
-                <Image
-                  alt={category.name}
-                  className="md:h-[51.2px] md:w-[51.2px]"
-                  height={44.8}
-                  src={category.icon}
-                  width={44.8}
-                />
-              </div>
-              <p className="text-xs font-semibold text-neutral-950 md:text-md">
-                {category.name}
+              Coba Lagi
+            </Button>
+          </div>
+        ) : null}
+
+        {!isCategoriesLoading && !isCategoriesError ? (
+          <>
+            <div className="grid grid-cols-3 gap-3 lg:grid-cols-6 lg:gap-4">
+              {categories.map((category) => {
+                const icon = getCategoryIcon(category.name);
+
+                return (
+                  <article
+                    className="grid gap-2 rounded-2xl p-2 shadow-card lg:p-3"
+                    key={category.id}
+                  >
+                    <div className="flex items-center justify-center rounded-xl bg-primary-50 p-[5.6px] md:p-[6.4px]">
+                      {icon.type === "image" ? (
+                        <Image
+                          alt={category.name}
+                          className="md:h-[51.2px] md:w-[51.2px]"
+                          height={44.8}
+                          src={icon.src}
+                          width={44.8}
+                        />
+                      ) : (
+                        <icon.Icon
+                          aria-hidden="true"
+                          className="h-11 w-11 text-primary-600 md:h-[51.2px] md:w-[51.2px]"
+                        />
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-neutral-950 md:text-md">
+                      {category.name}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+
+            {categories.length === 0 ? (
+              <p className="text-center text-sm text-neutral-700 md:text-md">
+                Belum ada kategori buku.
               </p>
-            </article>
-          ))}
-        </div>
+            ) : null}
+          </>
+        ) : null}
       </section>
 
       <section className="grid gap-4 lg:gap-6">
