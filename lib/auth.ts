@@ -10,6 +10,7 @@ const authClient = axios.create({
 
 export const AUTH_TOKEN_STORAGE_KEY = "library_auth_token";
 export const AUTH_USER_STORAGE_KEY = "library_auth_user";
+export const AUTH_STATE_CHANGED_EVENT = "library_auth_state_changed";
 
 export type UserRole = "USER" | "ADMIN";
 
@@ -58,6 +59,14 @@ type JwtPayload = {
   exp?: number;
 };
 
+function dispatchAuthStateChangedEvent() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(AUTH_STATE_CHANGED_EVENT));
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   try {
     const response = await authClient.post<LoginResponse>("/auth/login", payload);
@@ -99,6 +108,7 @@ export function saveAuthToken(token: string): void {
   }
 
   localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+  dispatchAuthStateChangedEvent();
 }
 
 export function saveAuthUser(user: LoginUser): void {
@@ -107,6 +117,7 @@ export function saveAuthUser(user: LoginUser): void {
   }
 
   localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
+  dispatchAuthStateChangedEvent();
 }
 
 export function saveAuthSession(data: LoginData): void {
@@ -187,6 +198,7 @@ export function removeAuthToken(): void {
   }
 
   localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  dispatchAuthStateChangedEvent();
 }
 
 export function removeAuthUser(): void {
@@ -195,6 +207,7 @@ export function removeAuthUser(): void {
   }
 
   localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+  dispatchAuthStateChangedEvent();
 }
 
 export function clearAuthSession(): void {

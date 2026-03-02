@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
+  AUTH_STATE_CHANGED_EVENT,
   clearAuthSession,
   getAuthRole,
   getAuthToken,
@@ -263,7 +264,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
     syncAuth();
 
     window.addEventListener("storage", syncAuth);
-    return () => window.removeEventListener("storage", syncAuth);
+    window.addEventListener(AUTH_STATE_CHANGED_EVENT, syncAuth);
+
+    return () => {
+      window.removeEventListener("storage", syncAuth);
+      window.removeEventListener(AUTH_STATE_CHANGED_EVENT, syncAuth);
+    };
   }, [isLoggedIn]);
 
   const startsWithSegment = (segment: string) =>

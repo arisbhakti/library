@@ -271,6 +271,39 @@ type MyLoansResponse = {
   data?: MyLoansData;
 };
 
+export type MyProfile = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  profilePhoto: string | null;
+  role: "USER" | "ADMIN";
+  createdAt: string;
+};
+
+export type MyProfileData = {
+  profile: MyProfile;
+};
+
+type MyProfileResponse = {
+  success: boolean;
+  message: string;
+  data?: MyProfileData;
+};
+
+export type UpdateMyProfilePayload = {
+  name: string;
+  phone: string;
+  profilePhoto?: File | null;
+  token?: string | null;
+};
+
+type UpdateMyProfileResponse = {
+  success: boolean;
+  message: string;
+  data?: MyProfileData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -341,6 +374,11 @@ export const tanstackQueryKeys = {
     all: ["checkout"] as const,
     detail: (token: string | null) =>
       [...tanstackQueryKeys.checkout.all, token ?? ""] as const,
+  },
+  profile: {
+    all: ["profile"] as const,
+    detail: (token: string | null) =>
+      [...tanstackQueryKeys.profile.all, token ?? ""] as const,
   },
   myLoans: {
     all: ["my-loans"] as const,
@@ -751,6 +789,103 @@ export function useBookDetailQuery(id: number | null) {
       return fetchBookDetail(id, signal);
     },
     enabled: typeof id === "number" && Number.isFinite(id) && id > 0,
+  });
+}
+
+export async function fetchMyProfile(
+  options?: {
+    token?: string | null;
+  },
+  signal?: AbortSignal,
+): Promise<MyProfileData> {
+  try {
+    const token = options?.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<MyProfileResponse>("/me", {
+      signal,
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+
+    if (!response.data.success || !response.data.data?.profile) {
+      throw new Error(response.data.message || "Gagal memuat profile.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<MyProfileResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memuat profile.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat profile.");
+  }
+}
+
+export async function updateMyProfile(
+  payload: UpdateMyProfilePayload,
+): Promise<UpdateMyProfileResponse> {
+  try {
+    const token = payload.token?.trim() ?? "";
+    const formData = new FormData();
+
+    formData.append("name", payload.name);
+    formData.append("phone", payload.phone);
+
+    if (payload.profilePhoto instanceof File) {
+      formData.append("profilePhoto", payload.profilePhoto);
+    }
+
+    const response = await tanstackApiClient.patch<UpdateMyProfileResponse>(
+      "/me",
+      formData,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success || !response.data.data?.profile) {
+      throw new Error(response.data.message || "Gagal memperbarui profile.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<UpdateMyProfileResponse>(error)) {
+      const message =
+        error.response?.data?.message || "Gagal memperbarui profile.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memperbarui profile.");
+  }
+}
+
+export function useMyProfileQuery(
+  options?: {
+    token?: string | null;
+    enabled?: boolean;
+  },
+) {
+  const token = options?.token ?? null;
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: tanstackQueryKeys.profile.detail(token),
+    queryFn: ({ signal }) =>
+      fetchMyProfile(
+        {
+          token,
+        },
+        signal,
+      ),
+    enabled,
   });
 }
 
