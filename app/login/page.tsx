@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { login, saveAuthToken } from "@/lib/auth";
+import { login, saveAuthSession } from "@/lib/auth";
 
 function EyeIcon() {
   return (
@@ -84,7 +84,7 @@ export default function LoginPage() {
         return;
       }
 
-      saveAuthToken(response.data.token);
+      saveAuthSession(response.data);
       setErrors({});
       router.push("/");
     },

@@ -3,9 +3,8 @@
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
-
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,10 +14,81 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  clearAuthSession,
+  getAuthRole,
+  getAuthToken,
+  getAuthUser,
+  type UserRole,
+} from "@/lib/auth";
 
 type HeaderProps = {
   isLoggedIn?: boolean;
 };
+
+type AuthViewState = {
+  isLoggedIn: boolean;
+  role: UserRole | null;
+  displayName: string;
+  profilePhoto: string;
+  fallbackName: string;
+};
+
+const DEFAULT_AVATAR = "/dummy-avatar.png";
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function resolveProfilePhoto(profilePhoto: string | null | undefined): string {
+  if (!profilePhoto) {
+    return DEFAULT_AVATAR;
+  }
+
+  const normalized = profilePhoto.trim();
+  if (!normalized) {
+    return DEFAULT_AVATAR;
+  }
+
+  if (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("data:image/") ||
+    normalized.startsWith("/")
+  ) {
+    return normalized;
+  }
+
+  if (/^[A-Za-z0-9+/=]+$/.test(normalized)) {
+    return `data:image/png;base64,${normalized}`;
+  }
+
+  return normalized;
+}
+
+function getAuthViewState(isLoggedInProp: boolean): AuthViewState {
+  const token = getAuthToken();
+  const user = getAuthUser();
+  const role = user?.role ?? getAuthRole();
+
+  const nameFromRole = role === "ADMIN" ? "Admin" : "User";
+  const displayName = user?.name?.trim() || nameFromRole;
+  const fallbackName = getInitials(displayName);
+
+  return {
+    isLoggedIn: Boolean(token) || isLoggedInProp,
+    role,
+    displayName,
+    profilePhoto: resolveProfilePhoto(user?.profilePhoto),
+    fallbackName,
+  };
+}
 
 function DesktopBrand() {
   return (
@@ -51,7 +121,7 @@ function MobileBrand() {
 
 function SearchField({ compact = false }: { compact?: boolean }) {
   return (
-    <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300  px-4">
+    <label className="flex h-11 w-full items-center gap-2 rounded-full border border-neutral-300 px-4">
       <Image
         alt=""
         aria-hidden="true"
@@ -60,7 +130,7 @@ function SearchField({ compact = false }: { compact?: boolean }) {
         width={20}
       />
       <Input
-        className="h-full border-0 bg-transparent p-0 text-sm text-neutral-950 shadow-none placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0 font-medium"
+        className="h-full border-0 bg-transparent p-0 text-sm font-medium text-neutral-950 shadow-none placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0"
         placeholder="Search book"
         type="text"
       />
@@ -83,68 +153,111 @@ function CartButton() {
         src="/icon-shopping-bag.svg"
         width={28}
       />
-      <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-danger-300 text-xs font-semibold text-neutral-25">
-        1
-      </span>
     </button>
   );
 }
 
-function UserMenuItems({ mobile = false }: { mobile?: boolean }) {
+function UserMenuItems({
+  mobile = false,
+  role,
+  onLogout,
+}: {
+  mobile?: boolean;
+  role: UserRole | null;
+  onLogout: () => void;
+}) {
   const regularItemClass = mobile
     ? "h-14 cursor-pointer rounded-2xl px-4 text-display-xs font-medium text-neutral-950 focus:bg-neutral-100 focus:text-neutral-950"
-    : "h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-neutral-950 focus:bg-neutral-100 focus:text-neutral-950";
+    : "h-11 cursor-pointer rounded-xl px-3 text-md font-medium text-neutral-950 focus:bg-neutral-100 focus:text-neutral-950";
 
   const logoutItemClass = mobile
     ? "h-14 cursor-pointer rounded-2xl px-4 text-display-xs font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
-    : "h-11 cursor-pointer rounded-xl px-3 text-xl font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300";
+    : "h-11 cursor-pointer rounded-xl px-3 text-md font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300";
+
+  const isAdmin = role === "ADMIN";
 
   return (
     <div className="grid gap-1">
-      <DropdownMenuItem asChild className={regularItemClass}>
-        <Link href="/profile">Profile</Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem asChild className={regularItemClass}>
-        <Link href="/profile?tab=borrowed-list">Borrowed List</Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem asChild className={regularItemClass}>
-        <Link href="/profile?tab=reviews">Reviews</Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem asChild className={logoutItemClass}>
-        <Link href="/login">Logout</Link>
+      {isAdmin ? (
+        <>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/list">Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/list?tab=book-list">Book List</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/list?tab=user">User</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/list?tab=borrowed-list">Borrowed List</Link>
+          </DropdownMenuItem>
+        </>
+      ) : (
+        <>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/profile">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/profile?tab=borrowed-list">Borrowed List</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={regularItemClass}>
+            <Link href="/profile?tab=reviews">Reviews</Link>
+          </DropdownMenuItem>
+        </>
+      )}
+      <DropdownMenuItem
+        className={logoutItemClass}
+        onSelect={(event) => {
+          event.preventDefault();
+          onLogout();
+        }}
+      >
+        Logout
       </DropdownMenuItem>
     </div>
   );
 }
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
+  const [authView, setAuthView] = useState<AuthViewState>(() =>
+    getAuthViewState(isLoggedIn),
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const syncAuth = () => setAuthView(getAuthViewState(isLoggedIn));
+    syncAuth();
+
+    window.addEventListener("storage", syncAuth);
+    return () => window.removeEventListener("storage", syncAuth);
+  }, [isLoggedIn]);
 
   const startsWithSegment = (segment: string) =>
     pathname === segment || pathname.startsWith(`${segment}/`);
 
+  const isAdmin = authView.role === "ADMIN";
   const isAdminLibraryPage =
-    startsWithSegment("/list") ||
-    startsWithSegment("/preview") ||
-    startsWithSegment("/book");
-  const resolvedIsLoggedIn =
-    searchParams.get("auth") === "1" ||
-    isLoggedIn ||
-    pathname.startsWith("/detail") ||
-    pathname.startsWith("/category") ||
-    pathname.startsWith("/book-by-author") ||
-    pathname.startsWith("/cart") ||
-    pathname.startsWith("/checkout") ||
-    pathname.startsWith("/success") ||
-    pathname.startsWith("/profile");
+    isAdmin &&
+    (startsWithSegment("/list") ||
+      startsWithSegment("/preview") ||
+      startsWithSegment("/book"));
+
+  const handleLogout = () => {
+    clearAuthSession();
+    setAuthView(getAuthViewState(false));
+    setIsMobileGuestMenuOpen(false);
+    setIsSearchOpen(false);
+    router.push("/login");
+  };
 
   if (isAdminLibraryPage) {
     return (
       <header className="fixed top-0 z-50 w-full bg-white shadow-card">
-        <div className="flex h-16 md:h-20 items-center justify-between px-4 lg:hidden">
+        <div className="flex h-16 items-center justify-between px-4 lg:hidden">
           <MobileBrand />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -154,22 +267,20 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                 type="button"
               >
                 <Avatar className="size-9">
-                  <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage
+                    alt={authView.displayName}
+                    src={authView.profilePhoto}
+                  />
+                  <AvatarFallback>{authView.fallbackName}</AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-[148px] rounded-2xl border-neutral-200 bg-neutral-25 p-2 shadow-none lg:hidden"
+              className="w-[calc(100vw-32px)] rounded-4xl border-neutral-200 bg-neutral-25 p-4 shadow-none lg:hidden"
               sideOffset={12}
             >
-              <DropdownMenuItem
-                asChild
-                className="h-11 cursor-pointer rounded-xl px-3 text-md font-semibold text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
-              >
-                <Link href="/login">Logout</Link>
-              </DropdownMenuItem>
+              <UserMenuItems mobile onLogout={handleLogout} role={authView.role} />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -181,26 +292,24 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2" type="button">
                   <Avatar className="size-8">
-                    <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarImage
+                      alt={authView.displayName}
+                      src={authView.profilePhoto}
+                    />
+                    <AvatarFallback>{authView.fallbackName}</AvatarFallback>
                   </Avatar>
                   <span className="text-md font-semibold text-neutral-950">
-                    John Doe
+                    {authView.displayName}
                   </span>
                   <ChevronDown className="h-4 w-4 text-neutral-800" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-[160px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
+                className="w-[220px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
                 sideOffset={12}
               >
-                <DropdownMenuItem
-                  asChild
-                  className="h-11 cursor-pointer rounded-xl px-3 text-md font-medium text-danger-300 focus:bg-danger-300/10 focus:text-danger-300"
-                >
-                  <Link href="/login">Logout</Link>
-                </DropdownMenuItem>
+                <UserMenuItems onLogout={handleLogout} role={authView.role} />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -210,7 +319,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white shadow-card fixed w-full z-50">
+    <header className="fixed z-50 w-full bg-white shadow-card">
       <div className="flex h-16 items-center px-4 lg:hidden">
         {isSearchOpen ? (
           <div className="flex w-full items-center gap-3">
@@ -252,8 +361,8 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                   width={24}
                 />
               </button>
-              <CartButton />
-              {resolvedIsLoggedIn ? (
+              {authView.isLoggedIn && !isAdmin ? <CartButton /> : null}
+              {authView.isLoggedIn ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -262,8 +371,11 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                       type="button"
                     >
                       <Avatar className="size-8">
-                        <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                        <AvatarFallback>JD</AvatarFallback>
+                        <AvatarImage
+                          alt={authView.displayName}
+                          src={authView.profilePhoto}
+                        />
+                        <AvatarFallback>{authView.fallbackName}</AvatarFallback>
                       </Avatar>
                     </button>
                   </DropdownMenuTrigger>
@@ -272,7 +384,11 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                     className="w-[calc(100vw-32px)] rounded-4xl border-neutral-200 bg-neutral-25 p-4 shadow-none lg:hidden"
                     sideOffset={20}
                   >
-                    <UserMenuItems mobile />
+                    <UserMenuItems
+                      mobile
+                      onLogout={handleLogout}
+                      role={authView.role}
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
@@ -301,7 +417,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-[calc(100vw)] bg-neutral-25 p-4 shadow-none lg:hidden -mt-2 border-none rounded-none"
+                    className="-mt-2 w-[calc(100vw)] rounded-none border-none bg-neutral-25 p-4 shadow-none lg:hidden"
                     sideOffset={20}
                   >
                     <div className="grid grid-cols-2 gap-3">
@@ -327,78 +443,29 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
         )}
       </div>
 
-      {/* <div className="hidden h-20 items-center px-[120px] lg:flex">
-        <div className="flex w-full items-center justify-between gap-8">
-          <DesktopBrand />
-          {resolvedIsLoggedIn ? (
-            <div className="flex items-center gap-8 ">
-              <div className="w-[500px]">
-                <SearchField />
-              </div>
-              <div className="flex items-center gap-4">
-                <CartButton />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2" type="button">
-                      <Avatar className="size-8">
-                        <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                      <span className="text-md font-semibold text-neutral-950">
-                        John Doe
-                      </span>
-                      <ChevronDown className="h-4 w-4 text-neutral-800" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-[220px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
-                    sideOffset={12}
-                  >
-                    <UserMenuItems />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Button
-                asChild
-                className="h-12 w-40.75 rounded-full border border-neutral-300 bg-neutral-25 text-md font-bold text-neutral-950 shadow-none hover:bg-neutral-100"
-                variant="outline"
-              >
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button
-                asChild
-                className="h-12 w-40.75 rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
-              >
-                <Link href="/register">Register</Link>
-              </Button>
-            </div>
-          )}
-        </div>
-      </div> */}
       <div className="hidden h-20 items-center px-[120px] lg:flex">
         <div className="flex w-full items-center justify-between gap-8">
           <DesktopBrand />
-          {resolvedIsLoggedIn ? (
+          {authView.isLoggedIn ? (
             <div className="w-[500px]">
               <SearchField />
             </div>
           ) : null}
-          {resolvedIsLoggedIn ? (
+          {authView.isLoggedIn ? (
             <div className="flex items-center gap-4">
-              <CartButton />
+              {!isAdmin ? <CartButton /> : null}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2" type="button">
                     <Avatar className="size-8">
-                      <AvatarImage alt="John Doe" src="/dummy-avatar.png" />
-                      <AvatarFallback>JD</AvatarFallback>
+                      <AvatarImage
+                        alt={authView.displayName}
+                        src={authView.profilePhoto}
+                      />
+                      <AvatarFallback>{authView.fallbackName}</AvatarFallback>
                     </Avatar>
                     <span className="text-md font-semibold text-neutral-950">
-                      John Doe
+                      {authView.displayName}
                     </span>
                     <ChevronDown className="h-4 w-4 text-neutral-800" />
                   </button>
@@ -408,12 +475,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                   className="w-[220px] rounded-3xl border-neutral-200 bg-neutral-25 p-2 shadow-none"
                   sideOffset={12}
                 >
-                  <UserMenuItems />
+                  <UserMenuItems onLogout={handleLogout} role={authView.role} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ) : null}
-          {!resolvedIsLoggedIn ? (
+          {!authView.isLoggedIn ? (
             <div className="flex items-center gap-3">
               <Button
                 asChild
