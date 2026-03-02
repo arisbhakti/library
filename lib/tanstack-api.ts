@@ -123,6 +123,18 @@ export type CategoriesData = {
   categories: Category[];
 };
 
+export type Author = {
+  id: number;
+  name: string;
+  bio: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AuthorsData = {
+  authors: Author[];
+};
+
 type RecommendationResponse = {
   success: boolean;
   message: string;
@@ -145,6 +157,12 @@ type CategoriesResponse = {
   success: boolean;
   message: string;
   data: CategoriesData;
+};
+
+type AuthorsResponse = {
+  success: boolean;
+  message: string;
+  data: AuthorsData;
 };
 
 export type BooksListData = {
@@ -487,6 +505,40 @@ type AdminLoansResponse = {
   data?: AdminLoansData;
 };
 
+export type CreateBookPayload = {
+  token?: string | null;
+  title: string;
+  description: string;
+  coverImage: File;
+  categoryId: number;
+  authorId?: number;
+  authorName?: string;
+};
+
+export type CreateBookData = {
+  id: number;
+  title: string;
+  description: string;
+  isbn: string;
+  publishedYear: number;
+  coverImage: string;
+  rating: number;
+  reviewCount: number;
+  totalCopies: number;
+  availableCopies: number;
+  borrowCount: number;
+  authorId: number;
+  categoryId: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateBookResponse = {
+  success: boolean;
+  message: string;
+  data?: CreateBookData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -569,6 +621,10 @@ export const tanstackQueryKeys = {
     all: ["author-books"] as const,
     list: (params: { authorId: number; limit: number }) =>
       [...tanstackQueryKeys.authorBooks.all, params] as const,
+  },
+  authors: {
+    all: ["authors"] as const,
+    list: (params: { q: string }) => [...tanstackQueryKeys.authors.all, params] as const,
   },
   categories: {
     all: ["categories"] as const,
@@ -1345,6 +1401,34 @@ export function usePopularAuthorsInfiniteQuery({
   });
 }
 
+export async function fetchAuthors(
+  q: string,
+  signal?: AbortSignal,
+): Promise<AuthorsData> {
+  const normalizedQuery = q.trim();
+  const response = await tanstackApiClient.get<AuthorsResponse>("/authors", {
+    signal,
+    params: normalizedQuery ? { q: normalizedQuery } : undefined,
+  });
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Gagal memuat daftar author.");
+  }
+
+  return response.data.data;
+}
+
+export function useAuthorsQuery(q: string, enabled = true) {
+  const normalizedQuery = q.trim();
+  return useQuery({
+    queryKey: tanstackQueryKeys.authors.list({
+      q: normalizedQuery,
+    }),
+    queryFn: ({ signal }) => fetchAuthors(normalizedQuery, signal),
+    enabled: enabled && normalizedQuery.length > 0,
+  });
+}
+
 export async function fetchCategories(
   signal?: AbortSignal,
 ): Promise<CategoriesData> {
@@ -1492,6 +1576,63 @@ export function useMyProfileQuery(
       ),
     enabled,
   });
+}
+
+function generateRandomNumericString(length: number): string {
+  let value = "";
+  for (let index = 0; index < length; index += 1) {
+    value += Math.floor(Math.random() * 10).toString();
+  }
+  return value;
+}
+
+export async function createBook(
+  payload: CreateBookPayload,
+): Promise<CreateBookResponse> {
+  try {
+    const token = payload.token?.trim() ?? "";
+    const formData = new FormData();
+
+    formData.append("title", payload.title);
+    formData.append("description", payload.description);
+    formData.append("categoryId", String(payload.categoryId));
+    formData.append("coverImage", payload.coverImage);
+    formData.append("publishedYear", String(new Date().getFullYear()));
+    formData.append("isbn", generateRandomNumericString(13));
+    formData.append("totalCopies", "100");
+    formData.append("availableCopies", "100");
+
+    if (typeof payload.authorId === "number" && payload.authorId > 0) {
+      formData.append("authorId", String(payload.authorId));
+    } else if (payload.authorName?.trim()) {
+      formData.append("authorName", payload.authorName.trim());
+    }
+
+    const response = await tanstackApiClient.post<CreateBookResponse>(
+      "/books",
+      formData,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal menambahkan buku.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<CreateBookResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal menambahkan buku.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat menambahkan buku.");
+  }
 }
 
 export async function fetchCart(

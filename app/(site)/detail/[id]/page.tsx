@@ -356,7 +356,9 @@ export default function DetailPage() {
         const filteredItems = (currentCart?.items ?? []).filter(
           (item) => item.bookId !== selectedBookId,
         );
-        const nextItems = normalizedItem ? [normalizedItem, ...filteredItems] : filteredItems;
+        const nextItems = normalizedItem
+          ? [normalizedItem, ...filteredItems]
+          : filteredItems;
 
         return {
           cartId: response.data?.item?.cartId ?? currentCart?.cartId ?? 0,
@@ -428,7 +430,8 @@ export default function DetailPage() {
 
   const authorName = book?.author?.name || "Unknown author";
   const categoryName = book?.category?.name || "Unknown category";
-  const visibleReviewCount = reviewState.bookId === bookId ? reviewState.count : 6;
+  const visibleReviewCount =
+    reviewState.bookId === bookId ? reviewState.count : 6;
   const visibleReviews = book?.reviews.slice(0, visibleReviewCount) ?? [];
   const hasMoreReviews = (book?.reviews.length ?? 0) > visibleReviewCount;
   const isAddingToCart = addToCartMutation.isPending;
@@ -453,7 +456,9 @@ export default function DetailPage() {
   if (bookId === null) {
     return (
       <main className="grid place-items-center gap-3 px-4 py-16 text-center lg:px-30">
-        <p className="text-sm text-neutral-700 md:text-md">ID buku tidak valid.</p>
+        <p className="text-sm text-neutral-700 md:text-md">
+          ID buku tidak valid.
+        </p>
         <Link
           className="text-sm font-bold text-primary-300 hover:text-primary-300/90 md:text-md"
           href="/"
@@ -474,7 +479,11 @@ export default function DetailPage() {
             <p className="text-sm text-neutral-700 md:text-md">
               {(error as Error)?.message || "Gagal memuat detail buku."}
             </p>
-            <Button className="rounded-full" onClick={() => refetch()} variant="outline">
+            <Button
+              className="rounded-full"
+              onClick={() => refetch()}
+              variant="outline"
+            >
               Coba Lagi
             </Button>
           </div>
@@ -553,7 +562,9 @@ export default function DetailPage() {
                       {authorName}
                     </Link>
                   ) : (
-                    <p className="text-sm text-neutral-700 md:text-md">{authorName}</p>
+                    <p className="text-sm text-neutral-700 md:text-md">
+                      {authorName}
+                    </p>
                   )}
                   <div className="flex items-center gap-1">
                     <Image
@@ -597,7 +608,9 @@ export default function DetailPage() {
                 </div>
 
                 <section className="grid gap-2 border-t border-neutral-200 pt-4">
-                  <h2 className="text-xl font-bold text-neutral-950">Description</h2>
+                  <h2 className="text-xl font-bold text-neutral-950">
+                    Description
+                  </h2>
                   <p className="text-sm font-medium text-neutral-900 md:text-md">
                     {book.description || "-"}
                   </p>
@@ -766,7 +779,7 @@ export default function DetailPage() {
                         </Link>
                         <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
                           <Link href={`/detail/${relatedBook.id}`}>
-                            <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                            <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
                               {relatedBook.title}
                             </p>
                           </Link>

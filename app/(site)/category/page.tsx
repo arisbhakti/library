@@ -98,7 +98,10 @@ function FilterFields({
         {isCategoriesLoading ? (
           <div className="grid gap-2">
             {Array.from({ length: 6 }, (_, index) => (
-              <div className="flex items-center gap-2" key={`category-filter-${index}`}>
+              <div
+                className="flex items-center gap-2"
+                key={`category-filter-${index}`}
+              >
                 <Skeleton className="h-4 w-4 rounded-[4px]" />
                 <Skeleton className="h-4 w-28" />
               </div>
@@ -109,7 +112,10 @@ function FilterFields({
         {isCategoriesError ? (
           <div className="grid gap-2">
             <p className="text-sm text-neutral-700">{categoriesErrorMessage}</p>
-            <Button className="h-8 w-fit rounded-full px-3" onClick={onRetryCategories}>
+            <Button
+              className="h-8 w-fit rounded-full px-3"
+              onClick={onRetryCategories}
+            >
               Coba Lagi
             </Button>
           </div>
@@ -127,7 +133,9 @@ function FilterFields({
                       onCategoryCheckedChange(category.id, checked === true)
                     }
                   />
-                  <span className="text-md text-neutral-900">{category.name}</span>
+                  <span className="text-md text-neutral-900">
+                    {category.name}
+                  </span>
                 </label>
               ))}
             </div>
@@ -243,7 +251,10 @@ export default function CategoryPage() {
     refetch: refetchCategories,
   } = useCategoriesQuery();
 
-  const categories = useMemo(() => categoriesData?.categories ?? [], [categoriesData]);
+  const categories = useMemo(
+    () => categoriesData?.categories ?? [],
+    [categoriesData],
+  );
 
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
@@ -314,11 +325,16 @@ export default function CategoryPage() {
     return query ? `${pathname}?${query}` : pathname;
   };
 
-  const handleCategoryCheckedChange = (categoryId: number, nextChecked: boolean) => {
+  const handleCategoryCheckedChange = (
+    categoryId: number,
+    nextChecked: boolean,
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (nextChecked) {
-      const selected = categories.find((category) => category.id === categoryId);
+      const selected = categories.find(
+        (category) => category.id === categoryId,
+      );
       if (selected) {
         params.set("category", selected.name);
         params.set("categoryId", String(selected.id));
@@ -383,7 +399,8 @@ export default function CategoryPage() {
             {isBooksError ? (
               <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
                 <p className="text-sm text-neutral-700 md:text-md">
-                  {(booksError as Error)?.message || "Gagal memuat daftar buku."}
+                  {(booksError as Error)?.message ||
+                    "Gagal memuat daftar buku."}
                 </p>
                 <Button
                   className="rounded-full"
@@ -416,7 +433,7 @@ export default function CategoryPage() {
                           src={getBookCoverSource(book.coverImage)}
                         />
                         <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
-                          <p className="text-sm font-bold text-neutral-950 lg:text-lg">
+                          <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
                             {book.title}
                           </p>
                           <p className="text-sm text-neutral-700 lg:text-md">
