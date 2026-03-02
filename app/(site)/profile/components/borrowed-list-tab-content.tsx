@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthToken } from "@/lib/auth";
 import {
+  createReview,
   type MyLoan,
   type MyLoanStatusFilter,
   returnLoan,
@@ -24,9 +25,15 @@ import {
 
 const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 const SEARCH_DEBOUNCE_MS = 400;
+const REVIEW_COMMENT_MIN_LENGTH = 3;
 
 type UiBorrowedStatus = "active" | "returned" | "overdue";
 type LoanAction = "return" | "review";
+type ReviewFormErrors = {
+  rating?: string;
+  comment?: string;
+  form?: string;
+};
 
 const borrowedFilters: { label: string; value: MyLoanStatusFilter }[] = [
   { label: "All", value: "all" },
@@ -158,6 +165,29 @@ function getDurationLabel(durationDays: number): string {
   return `Duration ${durationDays} ${durationDays === 1 ? "Day" : "Days"}`;
 }
 
+function validateReviewForm({
+  rating,
+  comment,
+}: {
+  rating: number;
+  comment: string;
+}): ReviewFormErrors {
+  const errors: ReviewFormErrors = {};
+  const normalizedComment = comment.trim();
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    errors.rating = "Rating harus antara 1 sampai 5 bintang.";
+  }
+
+  if (!normalizedComment) {
+    errors.comment = "Komentar wajib diisi.";
+  } else if (normalizedComment.length < REVIEW_COMMENT_MIN_LENGTH) {
+    errors.comment = `Komentar minimal ${REVIEW_COMMENT_MIN_LENGTH} karakter.`;
+  }
+
+  return errors;
+}
+
 function BorrowedItemSkeleton() {
   return (
     <article className="grid gap-3 rounded-3xl p-4 shadow-card">
@@ -233,8 +263,10 @@ export function BorrowedListTabContent() {
   const [borrowedFilter, setBorrowedFilter] = useState<MyLoanStatusFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [selectedReviewLoan, setSelectedReviewLoan] = useState<MyLoan | null>(null);
   const [reviewRating, setReviewRating] = useState(4);
   const [reviewText, setReviewText] = useState("");
+  const [reviewFormErrors, setReviewFormErrors] = useState<ReviewFormErrors>({});
 
   const token = getAuthToken();
   const debouncedSearchTerm = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS);
@@ -284,17 +316,94 @@ export function BorrowedListTabContent() {
     },
   });
 
+  const submitReviewMutation = useMutation({
+    mutationFn: async (payload: {
+      bookId: number;
+      star: number;
+      comment: string;
+    }) => {
+      if (!token) {
+        throw new Error("Sesi login tidak ditemukan. Silakan login kembali.");
+      }
+
+      return createReview({
+        bookId: payload.bookId,
+        star: payload.star,
+        comment: payload.comment,
+        token,
+      });
+    },
+    onSuccess: async (response, variables) => {
+      showSuccessToast(response.message || "Review saved");
+      setIsReviewDialogOpen(false);
+      setSelectedReviewLoan(null);
+      resetReviewForm();
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: tanstackQueryKeys.myLoans.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: tanstackQueryKeys.bookDetail.detail(variables.bookId),
+        }),
+      ]);
+    },
+    onError: (mutationError: Error) => {
+      const message = mutationError.message || "Gagal menyimpan review.";
+      setReviewFormErrors((previous) => ({
+        ...previous,
+        form: message,
+      }));
+      showErrorToast(message);
+    },
+  });
+
   const resetReviewForm = () => {
     setReviewRating(4);
     setReviewText("");
+    setReviewFormErrors({});
+  };
+
+  const handleOpenReviewDialog = (loan: MyLoan) => {
+    setSelectedReviewLoan(loan);
+    resetReviewForm();
+    setIsReviewDialogOpen(true);
   };
 
   const handleReviewDialogChange = (open: boolean) => {
     setIsReviewDialogOpen(open);
 
     if (!open) {
+      setSelectedReviewLoan(null);
       resetReviewForm();
     }
+  };
+
+  const handleSubmitReview = () => {
+    if (!selectedReviewLoan) {
+      const message = "Buku untuk direview tidak ditemukan.";
+      setReviewFormErrors({ form: message });
+      showErrorToast(message);
+      return;
+    }
+
+    const normalizedComment = reviewText.trim();
+    const validationErrors = validateReviewForm({
+      rating: reviewRating,
+      comment: normalizedComment,
+    });
+
+    if (Object.keys(validationErrors).length > 0) {
+      setReviewFormErrors(validationErrors);
+      return;
+    }
+
+    setReviewFormErrors({});
+    submitReviewMutation.mutate({
+      bookId: selectedReviewLoan.book.id,
+      star: reviewRating,
+      comment: normalizedComment,
+    });
   };
 
   return (
@@ -461,7 +570,7 @@ export function BorrowedListTabContent() {
                       {loanAction === "review" ? (
                         <Button
                           className="h-10 rounded-full bg-primary-300 px-10 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
-                          onClick={() => setIsReviewDialogOpen(true)}
+                          onClick={() => handleOpenReviewDialog(loan)}
                           type="button"
                         >
                           Give Review
@@ -474,26 +583,20 @@ export function BorrowedListTabContent() {
             </div>
           )}
 
-          {hasNextPage ? (
-            <div className="flex items-center justify-center">
-              <Button
-                className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm text-neutral-950 shadow-none hover:bg-neutral-100 md:h-12 md:w-50 md:text-md font-bold"
-                disabled={isFetchingNextPage}
-                onClick={() => fetchNextPage()}
-                variant="outline"
-              >
-                {isFetchingNextPage ? "Loading..." : "Load More"}
-              </Button>
-            </div>
-          ) : null}
-
-          {isFetchingNextPage ? (
-            <div className="grid gap-4">
-              {Array.from({ length: 2 }, (_, index) => (
-                <BorrowedItemSkeleton key={`borrowed-next-skeleton-${index}`} />
-              ))}
-            </div>
-          ) : null}
+          <div className="flex items-center justify-center">
+            <Button
+              className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm font-bold text-neutral-950 shadow-none hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-50 md:text-md"
+              disabled={isFetchingNextPage || !hasNextPage}
+              onClick={() => fetchNextPage()}
+              variant="outline"
+            >
+              {isFetchingNextPage
+                ? "Loading..."
+                : hasNextPage
+                  ? "Load More"
+                  : "No More Books"}
+            </Button>
+          </div>
         </>
       ) : null}
 
@@ -523,6 +626,12 @@ export function BorrowedListTabContent() {
             </DialogClose>
           </div>
 
+          {reviewFormErrors.form ? (
+            <p className="text-sm font-semibold text-danger-300">
+              {reviewFormErrors.form}
+            </p>
+          ) : null}
+
           <div className="grid justify-items-center gap-2">
             <p className="text-sm md:text-md font-bold text-neutral-950">
               Give Rating
@@ -536,7 +645,14 @@ export function BorrowedListTabContent() {
                     aria-label={`Give ${index + 1} star rating`}
                     className="flex size-10 md:size-12.25 items-center justify-center"
                     key={index}
-                    onClick={() => setReviewRating(index + 1)}
+                    onClick={() => {
+                      setReviewRating(index + 1);
+                      setReviewFormErrors((previous) => ({
+                        ...previous,
+                        rating: undefined,
+                        form: undefined,
+                      }));
+                    }}
                     type="button"
                   >
                     <Image
@@ -555,21 +671,41 @@ export function BorrowedListTabContent() {
                 );
               })}
             </div>
+            {reviewFormErrors.rating ? (
+              <p className="text-sm font-semibold text-danger-300">
+                {reviewFormErrors.rating}
+              </p>
+            ) : null}
           </div>
 
           <textarea
-            className="h-[260px] w-full resize-none rounded-2xl border border-neutral-300 bg-neutral-25 p-4 text-sm md:text-md text-neutral-950 outline-none placeholder:text-neutral-500"
-            onChange={(event) => setReviewText(event.target.value)}
+            className={`h-[260px] w-full resize-none rounded-2xl border bg-neutral-25 p-4 text-sm md:text-md text-neutral-950 outline-none placeholder:text-neutral-500 ${
+              reviewFormErrors.comment ? "border-danger-300" : "border-neutral-300"
+            }`}
+            onChange={(event) => {
+              setReviewText(event.target.value);
+              setReviewFormErrors((previous) => ({
+                ...previous,
+                comment: undefined,
+                form: undefined,
+              }));
+            }}
             placeholder="Please share your thoughts about this book"
             value={reviewText}
           />
+          {reviewFormErrors.comment ? (
+            <p className="-mt-2 text-sm font-semibold text-danger-300">
+              {reviewFormErrors.comment}
+            </p>
+          ) : null}
 
           <Button
             className="h-10 md:h-12 rounded-full bg-primary-300 text-sm md:text-md font-bold text-neutral-25 hover:bg-primary-300/90"
-            onClick={() => setIsReviewDialogOpen(false)}
+            disabled={submitReviewMutation.isPending}
+            onClick={handleSubmitReview}
             type="button"
           >
-            Send
+            {submitReviewMutation.isPending ? "Sending..." : "Send"}
           </Button>
         </DialogContent>
       </Dialog>

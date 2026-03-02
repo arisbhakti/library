@@ -291,6 +291,31 @@ export type ReturnLoanResponse = {
   data?: ReturnLoanData;
 };
 
+export type Review = {
+  id: number;
+  star: number;
+  comment: string;
+  userId: number;
+  bookId: number;
+  createdAt: string;
+};
+
+export type ReviewBookStats = {
+  rating: number;
+  reviewCount: number;
+};
+
+export type CreateReviewData = {
+  review: Review;
+  bookStats: ReviewBookStats;
+};
+
+export type CreateReviewResponse = {
+  success: boolean;
+  message: string;
+  data?: CreateReviewData;
+};
+
 export type MyProfile = {
   id: number;
   name: string;
@@ -1110,6 +1135,45 @@ export async function returnLoan(options: {
     }
 
     throw new Error("Terjadi kesalahan saat mengembalikan buku.");
+  }
+}
+
+export async function createReview(options: {
+  bookId: number;
+  star: number;
+  comment: string;
+  token?: string | null;
+}): Promise<CreateReviewResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.post<CreateReviewResponse>(
+      "/reviews",
+      {
+        bookId: options.bookId,
+        star: options.star,
+        comment: options.comment,
+      },
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal menyimpan review.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<CreateReviewResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal menyimpan review.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat menyimpan review.");
   }
 }
 
