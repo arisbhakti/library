@@ -179,11 +179,6 @@ export default function BookByAuthorPage() {
                     {bookCount} {bookCount === 1 ? "book" : "books"}
                   </span>
                 </div>
-                {/* {authorBio ? (
-                  <p className="line-clamp-3 text-sm text-neutral-700 md:text-md">
-                    {authorBio}
-                  </p>
-                ) : null} */}
               </div>
             </div>
           </section>
