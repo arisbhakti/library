@@ -247,6 +247,26 @@ type LoanFromCartResponse = {
   data?: LoanFromCartData;
 };
 
+export type BorrowLoan = {
+  id: number;
+  userId: number;
+  bookId: number;
+  status: string;
+  borrowedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+};
+
+export type BorrowBookData = {
+  loan: BorrowLoan;
+};
+
+export type BorrowBookResponse = {
+  success: boolean;
+  message: string;
+  data?: BorrowBookData;
+};
+
 export type MyLoanStatusFilter = "all" | "active" | "returned" | "overdue";
 
 export type MyLoan = {
@@ -1233,6 +1253,43 @@ export async function borrowFromCart(options: {
     }
 
     throw new Error("Terjadi kesalahan saat memproses checkout.");
+  }
+}
+
+export async function borrowBook(options: {
+  bookId: number;
+  days?: number;
+  token?: string | null;
+}): Promise<BorrowBookResponse> {
+  try {
+    const token = options.token?.trim() ?? "";
+    const response = await tanstackApiClient.post<BorrowBookResponse>(
+      "/loans",
+      {
+        bookId: options.bookId,
+        days: options.days ?? 7,
+      },
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Gagal meminjam buku.");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError<BorrowBookResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal meminjam buku.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat meminjam buku.");
   }
 }
 

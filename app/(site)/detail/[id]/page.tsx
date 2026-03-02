@@ -24,6 +24,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { store } from "@/lib/redux/store";
 import {
   addCartItem,
+  borrowBook,
   type CartData,
   normalizeCartItem,
   tanstackQueryKeys,
@@ -44,6 +45,23 @@ function formatReviewDate(value: string) {
 
   if (Number.isNaN(date.getTime())) {
     return "-";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function formatDueDate(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
   }
 
   return new Intl.DateTimeFormat("id-ID", {
@@ -365,6 +383,43 @@ export default function DetailPage() {
       void queryClient.invalidateQueries({ queryKey });
     },
   });
+  const borrowBookMutation = useMutation<
+    Awaited<ReturnType<typeof borrowBook>>,
+    Error,
+    number
+  >({
+    mutationFn: async (selectedBookId) => {
+      const token = getAuthToken();
+
+      if (!token) {
+        throw new Error("Silakan login terlebih dahulu.");
+      }
+
+      return borrowBook({
+        bookId: selectedBookId,
+        days: 7,
+        token,
+      });
+    },
+    onSuccess: (response, selectedBookId) => {
+      const dueAtLabel = formatDueDate(response.data?.loan.dueAt);
+      const successMessage = dueAtLabel
+        ? `Peminjaman berhasil. Harap kembalikan buku sebelum ${dueAtLabel}.`
+        : "Peminjaman berhasil. Harap kembalikan buku tepat waktu.";
+
+      showSuccessToast(successMessage);
+
+      void queryClient.invalidateQueries({
+        queryKey: tanstackQueryKeys.bookDetail.detail(selectedBookId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: tanstackQueryKeys.myLoans.all,
+      });
+    },
+    onError: (mutationError) => {
+      showErrorToast(mutationError.message || "Gagal meminjam buku.");
+    },
+  });
 
   const authorName = book?.author?.name || "Unknown author";
   const categoryName = book?.category?.name || "Unknown category";
@@ -372,6 +427,7 @@ export default function DetailPage() {
   const visibleReviews = book?.reviews.slice(0, visibleReviewCount) ?? [];
   const hasMoreReviews = (book?.reviews.length ?? 0) > visibleReviewCount;
   const isAddingToCart = addToCartMutation.isPending;
+  const isBorrowingBook = borrowBookMutation.isPending;
 
   const handleAddToCart = () => {
     if (!book) {
@@ -379,6 +435,14 @@ export default function DetailPage() {
     }
 
     addToCartMutation.mutate(book.id);
+  };
+
+  const handleBorrowBook = () => {
+    if (!book) {
+      return;
+    }
+
+    borrowBookMutation.mutate(book.id);
   };
 
   if (bookId === null) {
@@ -543,8 +607,12 @@ export default function DetailPage() {
                   >
                     {isAddingToCart ? "Adding..." : "Add to Cart"}
                   </Button>
-                  <Button className="h-11 w-50 rounded-full bg-primary-300 p-2 text-md font-bold text-neutral-25 hover:bg-primary-300/90">
-                    Borrow Book
+                  <Button
+                    className="h-11 w-50 rounded-full bg-primary-300 p-2 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
+                    disabled={isBorrowingBook}
+                    onClick={handleBorrowBook}
+                  >
+                    {isBorrowingBook ? "Borrowing..." : "Borrow Book"}
                   </Button>
                 </div>
               </div>
@@ -748,8 +816,12 @@ export default function DetailPage() {
           >
             {isAddingToCart ? "Adding..." : "Add to Cart"}
           </Button>
-          <Button className="h-10 flex-1 rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90">
-            Borrow Book
+          <Button
+            className="h-10 flex-1 rounded-full bg-primary-300 text-md font-semibold text-neutral-25 hover:bg-primary-300/90"
+            disabled={!book || isBorrowingBook}
+            onClick={handleBorrowBook}
+          >
+            {isBorrowingBook ? "Borrowing..." : "Borrow Book"}
           </Button>
         </div>
       </div>
