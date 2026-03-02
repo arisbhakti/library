@@ -344,6 +344,9 @@ export function BorrowedListTabContent() {
           queryKey: tanstackQueryKeys.myLoans.all,
         }),
         queryClient.invalidateQueries({
+          queryKey: tanstackQueryKeys.myReviews.all,
+        }),
+        queryClient.invalidateQueries({
           queryKey: tanstackQueryKeys.bookDetail.detail(variables.bookId),
         }),
       ]);

@@ -271,6 +271,36 @@ type MyLoansResponse = {
   data?: MyLoansData;
 };
 
+export type MyReviewBook = RecommendationBook & {
+  author?: {
+    id: number;
+    name: string;
+  } | null;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+};
+
+export type MyReview = {
+  id: number;
+  star: number;
+  comment: string;
+  createdAt: string;
+  book: MyReviewBook;
+};
+
+export type MyReviewsData = {
+  reviews: MyReview[];
+  pagination: RecommendationPagination;
+};
+
+type MyReviewsResponse = {
+  success: boolean;
+  message: string;
+  data?: MyReviewsData;
+};
+
 export type ReturnLoan = {
   id: number;
   userId: number;
@@ -377,6 +407,13 @@ type FetchMyLoansPageParams = {
   token?: string | null;
 };
 
+type FetchMyReviewsPageParams = {
+  q?: string;
+  page: number;
+  limit: number;
+  token?: string | null;
+};
+
 export const tanstackQueryKeys = {
   books: {
     all: ["books"] as const,
@@ -433,6 +470,14 @@ export const tanstackQueryKeys = {
       q: string | null;
       limit: number;
     }) => [...tanstackQueryKeys.myLoans.all, params] as const,
+  },
+  myReviews: {
+    all: ["my-reviews"] as const,
+    list: (params: {
+      token: string | null;
+      q: string | null;
+      limit: number;
+    }) => [...tanstackQueryKeys.myReviews.all, params] as const,
   },
 };
 
@@ -618,6 +663,92 @@ export function useMyLoansInfiniteQuery({
         {
           token,
           status,
+          q: effectiveQ,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+  });
+}
+
+export async function fetchMyReviewsPage(
+  params: FetchMyReviewsPageParams,
+  signal?: AbortSignal,
+): Promise<MyReviewsData> {
+  try {
+    const token = params.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<MyReviewsResponse>("/me/reviews", {
+      signal,
+      params: {
+        ...(params.q ? { q: params.q } : {}),
+        page: params.page,
+        limit: params.limit,
+      },
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Gagal memuat daftar review.");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<MyReviewsResponse>(error)) {
+      const message = error.response?.data?.message || "Gagal memuat daftar review.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat daftar review.");
+  }
+}
+
+type UseMyReviewsInfiniteQueryParams = {
+  token?: string | null;
+  q?: string;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useMyReviewsInfiniteQuery({
+  token,
+  q,
+  limit = 3,
+  enabled = true,
+}: UseMyReviewsInfiniteQueryParams) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.myReviews.list({
+      token: token ?? null,
+      q: effectiveQ ?? null,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchMyReviewsPage(
+        {
+          token,
           q: effectiveQ,
           page,
           limit,
