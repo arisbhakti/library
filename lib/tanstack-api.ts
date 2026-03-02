@@ -299,6 +299,41 @@ type MyLoansResponse = {
   data?: MyLoansData;
 };
 
+export type AdminLoanStatusFilter = "all" | "active" | "returned" | "overdue";
+
+export type AdminLoanBook = {
+  id: number;
+  title: string;
+  coverImage: string;
+  author?: {
+    id: number;
+    name: string;
+  } | null;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+};
+
+export type AdminLoanBorrower = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+};
+
+export type AdminLoan = {
+  id: number;
+  status: string;
+  displayStatus: string;
+  borrowedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  durationDays: number;
+  book: AdminLoanBook;
+  borrower: AdminLoanBorrower;
+};
+
 export type MyReviewBook = RecommendationBook & {
   author?: {
     id: number;
@@ -441,6 +476,17 @@ type AdminBooksResponse = {
   data?: AdminBooksData;
 };
 
+export type AdminLoansData = {
+  loans: AdminLoan[];
+  pagination: RecommendationPagination;
+};
+
+type AdminLoansResponse = {
+  success: boolean;
+  message: string;
+  data?: AdminLoansData;
+};
+
 type FetchRecommendationPageParams = {
   by: string;
   page: number;
@@ -485,6 +531,14 @@ type FetchAdminUsersPageParams = {
 
 type FetchAdminBooksPageParams = {
   status: AdminBookStatus;
+  q?: string;
+  page: number;
+  limit: number;
+  token?: string | null;
+};
+
+type FetchAdminLoansPageParams = {
+  status: AdminLoanStatusFilter;
   q?: string;
   page: number;
   limit: number;
@@ -573,6 +627,15 @@ export const tanstackQueryKeys = {
       q: string | null;
       limit: number;
     }) => [...tanstackQueryKeys.adminBooks.all, params] as const,
+  },
+  adminLoans: {
+    all: ["admin-loans"] as const,
+    list: (params: {
+      token: string | null;
+      status: AdminLoanStatusFilter;
+      q: string | null;
+      limit: number;
+    }) => [...tanstackQueryKeys.adminLoans.all, params] as const,
   },
 };
 
@@ -758,6 +821,104 @@ export function useAdminBooksInfiniteQuery({
     queryFn: ({ pageParam, signal }) => {
       const page = typeof pageParam === "number" ? pageParam : 1;
       return fetchAdminBooksPage(
+        {
+          token,
+          status,
+          q: effectiveQ,
+          page,
+          limit,
+        },
+        signal,
+      );
+    },
+    enabled,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const {
+        pagination: { page, totalPages },
+      } = lastPage;
+
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+  });
+}
+
+export async function fetchAdminLoansPage(
+  params: FetchAdminLoansPageParams,
+  signal?: AbortSignal,
+): Promise<AdminLoansData> {
+  try {
+    const token = params.token?.trim() ?? "";
+
+    const response = await tanstackApiClient.get<AdminLoansResponse>(
+      "/admin/loans",
+      {
+        signal,
+        params: {
+          status: params.status,
+          ...(params.q ? { q: params.q } : {}),
+          page: params.page,
+          limit: params.limit,
+        },
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      },
+    );
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(
+        response.data.message || "Gagal memuat daftar peminjaman admin.",
+      );
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError<AdminLoansResponse>(error)) {
+      const message =
+        error.response?.data?.message ||
+        "Gagal memuat daftar peminjaman admin.";
+      throw new Error(message);
+    }
+
+    throw new Error("Terjadi kesalahan saat memuat daftar peminjaman admin.");
+  }
+}
+
+type UseAdminLoansInfiniteQueryParams = {
+  token?: string | null;
+  status: AdminLoanStatusFilter;
+  q?: string;
+  limit?: number;
+  enabled?: boolean;
+};
+
+export function useAdminLoansInfiniteQuery({
+  token,
+  status,
+  q,
+  limit = 4,
+  enabled = true,
+}: UseAdminLoansInfiniteQueryParams) {
+  const normalizedQ = q?.trim() ?? "";
+  const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+
+  return useInfiniteQuery({
+    queryKey: tanstackQueryKeys.adminLoans.list({
+      token: token ?? null,
+      status,
+      q: effectiveQ ?? null,
+      limit,
+    }),
+    queryFn: ({ pageParam, signal }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchAdminLoansPage(
         {
           token,
           status,
