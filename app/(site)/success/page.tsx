@@ -48,7 +48,7 @@ export default function SuccessPage() {
           asChild
           className="h-12 w-full rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90 lg:h-12 lg:w-96 lg:text-lg"
         >
-          <Link href="/profile">See Borrowed List</Link>
+          <Link href="/profile?tab=borrowed-list">See Borrowed List</Link>
         </Button>
       </section>
     </main>
