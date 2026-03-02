@@ -34,6 +34,7 @@ import {
 
 const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
 const DEFAULT_AUTHOR_AVATAR = "/dummy-avatar.png";
+const BORROW_BOOK_TOAST_DURATION_MS = 5000;
 
 function formatRating(rating: number) {
   const fixed = rating.toFixed(2);
@@ -407,7 +408,9 @@ export default function DetailPage() {
         ? `Peminjaman berhasil. Harap kembalikan buku sebelum ${dueAtLabel}.`
         : "Peminjaman berhasil. Harap kembalikan buku tepat waktu.";
 
-      showSuccessToast(successMessage);
+      showSuccessToast(successMessage, {
+        durationMs: BORROW_BOOK_TOAST_DURATION_MS,
+      });
 
       void queryClient.invalidateQueries({
         queryKey: tanstackQueryKeys.bookDetail.detail(selectedBookId),
@@ -417,7 +420,9 @@ export default function DetailPage() {
       });
     },
     onError: (mutationError) => {
-      showErrorToast(mutationError.message || "Gagal meminjam buku.");
+      showErrorToast(mutationError.message || "Gagal meminjam buku.", {
+        durationMs: BORROW_BOOK_TOAST_DURATION_MS,
+      });
     },
   });
 

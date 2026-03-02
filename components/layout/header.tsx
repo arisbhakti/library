@@ -178,7 +178,7 @@ function CartButton({
         width={28}
       />
       {itemCount > 0 ? (
-        <span className="absolute -right-1 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary-300 px-1 text-[10px] font-bold leading-none text-neutral-25">
+        <span className="absolute -right-1 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-[#EE1D52] px-1 text-[10px] font-bold leading-none text-neutral-25">
           {itemCount > 99 ? "99+" : itemCount}
         </span>
       ) : null}

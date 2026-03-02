@@ -18,9 +18,13 @@ type ToastItem = {
   variant: ToastVariant;
 };
 
+type ToastOptions = {
+  durationMs?: number;
+};
+
 type AppToastContextValue = {
-  showSuccessToast: (message: string) => void;
-  showErrorToast: (message: string) => void;
+  showSuccessToast: (message: string, options?: ToastOptions) => void;
+  showErrorToast: (message: string, options?: ToastOptions) => void;
 };
 
 const AppToastContext = createContext<AppToastContextValue | null>(null);
@@ -34,8 +38,8 @@ function ToastCard({
 }) {
   const variantClassName =
     item.variant === "success"
-      ? "border-primary-300/30 bg-primary-50 text-primary-300"
-      : "border-danger-300/30 bg-danger-300/10 text-danger-300";
+      ? "border-primary-300 bg-neutral-25 text-primary-300"
+      : "border-danger-300 bg-neutral-25 text-danger-300";
 
   return (
     <div
@@ -64,23 +68,30 @@ export function AppToastProvider({ children }: PropsWithChildren) {
   }, []);
 
   const pushToast = useCallback(
-    (message: string, variant: ToastVariant) => {
+    (message: string, variant: ToastVariant, options?: ToastOptions) => {
       const nextId = idRef.current + 1;
       idRef.current = nextId;
 
       setToasts((current) => [...current, { id: nextId, message, variant }]);
 
+      const durationMs =
+        typeof options?.durationMs === "number" && options.durationMs > 0
+          ? options.durationMs
+          : 3000;
+
       window.setTimeout(() => {
         removeToast(nextId);
-      }, 3000);
+      }, durationMs);
     },
     [removeToast],
   );
 
   const contextValue = useMemo<AppToastContextValue>(
     () => ({
-      showSuccessToast: (message: string) => pushToast(message, "success"),
-      showErrorToast: (message: string) => pushToast(message, "error"),
+      showSuccessToast: (message: string, options?: ToastOptions) =>
+        pushToast(message, "success", options),
+      showErrorToast: (message: string, options?: ToastOptions) =>
+        pushToast(message, "error", options),
     }),
     [pushToast],
   );

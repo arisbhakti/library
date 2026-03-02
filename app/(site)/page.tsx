@@ -3,11 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import {
-  BookOpen,
-  Rocket,
-  Sparkles,
-} from "lucide-react";
+import { BookOpen, Rocket, Sparkles } from "lucide-react";
 
 import { HomeCarousel } from "@/components/home/home-carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -187,7 +183,8 @@ export default function HomePage() {
     refetch: refetchPopularAuthors,
   } = usePopularAuthorsInfiniteQuery({ limit: 4 });
   const popularAuthors =
-    popularAuthorsData?.pages[popularAuthorsData.pages.length - 1]?.authors ?? [];
+    popularAuthorsData?.pages[popularAuthorsData.pages.length - 1]?.authors ??
+    [];
 
   return (
     <main className="grid gap-8 bg-white px-4 py-4 lg:gap-10 lg:px-[120px] lg:py-8">
@@ -295,7 +292,7 @@ export default function HomePage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt={`${book.title} cover`}
-                      className="h-[258px] w-full object-cover md:h-84"
+                      className="h-64.5 w-full object-cover md:h-84"
                       loading="lazy"
                       onError={(event) => {
                         const image = event.currentTarget;
@@ -396,8 +393,13 @@ export default function HomePage() {
                 <Link href={`/book-by-author/${author.id}`} key={author.id}>
                   <article className="flex items-center gap-3 rounded-xl p-3 shadow-card transition-colors hover:bg-neutral-50 md:gap-4 md:p-4">
                     <Avatar className="size-15 lg:size-20.25">
-                      <AvatarImage alt={author.name} src={DEFAULT_AUTHOR_AVATAR} />
-                      <AvatarFallback>{getAuthorFallback(author.name)}</AvatarFallback>
+                      <AvatarImage
+                        alt={author.name}
+                        src={DEFAULT_AUTHOR_AVATAR}
+                      />
+                      <AvatarFallback>
+                        {getAuthorFallback(author.name)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="grid gap-0.5">
                       <p className="text-md font-bold text-neutral-950 md:text-lg">
