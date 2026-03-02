@@ -6,7 +6,10 @@ import { HomeCarousel } from "@/components/home/home-carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRecommendationInfiniteQuery } from "@/lib/tanstack-api";
+import {
+  usePopularAuthorsInfiniteQuery,
+  useRecommendationInfiniteQuery,
+} from "@/lib/tanstack-api";
 
 const categories = [
   { icon: "/category-fiction.svg", name: "Fiction" },
@@ -17,14 +20,8 @@ const categories = [
   { icon: "/category-education.svg", name: "Education" },
 ];
 
-const popularAuthors = Array.from({ length: 4 }, (_, index) => ({
-  id: index + 1,
-  name: "Author name",
-  books: "5 books",
-  avatar: "/dummy-avatar.png",
-}));
-
 const DEFAULT_BOOK_COVER = "/default-book-cover.svg";
+const DEFAULT_AUTHOR_AVATAR = "/dummy-avatar.png";
 
 function RecommendationSkeletonGrid() {
   return (
@@ -42,6 +39,25 @@ function RecommendationSkeletonGrid() {
               <Skeleton className="size-6" />
               <Skeleton className="h-4 w-8" />
             </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function PopularAuthorsSkeletonGrid() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
+      {Array.from({ length: 4 }, (_, index) => (
+        <article
+          className="flex items-center gap-3 rounded-xl p-3 shadow-card md:gap-4 md:p-4"
+          key={`popular-author-skeleton-${index}`}
+        >
+          <Skeleton className="size-15 rounded-full lg:size-20.25" />
+          <div className="grid flex-1 gap-2">
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-4 w-3/5" />
           </div>
         </article>
       ))}
@@ -77,6 +93,17 @@ function getBookCoverSource(coverImage?: string) {
   return DEFAULT_BOOK_COVER;
 }
 
+function getAuthorFallback(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return "AU";
+  }
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+  return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
+}
+
 export default function HomePage() {
   const {
     data,
@@ -90,6 +117,18 @@ export default function HomePage() {
   } = useRecommendationInfiniteQuery({ by: "rating", limit: 10 });
 
   const recommendationItems = data?.pages.flatMap((page) => page.books) ?? [];
+  const {
+    data: popularAuthorsData,
+    error: popularAuthorsError,
+    fetchNextPage: fetchNextPopularAuthorsPage,
+    hasNextPage: hasNextPopularAuthorsPage,
+    isError: isPopularAuthorsError,
+    isFetchingNextPage: isFetchingNextPopularAuthorsPage,
+    isLoading: isPopularAuthorsLoading,
+    refetch: refetchPopularAuthors,
+  } = usePopularAuthorsInfiniteQuery({ limit: 4 });
+  const popularAuthors =
+    popularAuthorsData?.pages[popularAuthorsData.pages.length - 1]?.authors ?? [];
 
   return (
     <main className="grid gap-8 bg-white px-4 py-4 lg:gap-10 lg:px-[120px] lg:py-8">
@@ -215,36 +254,83 @@ export default function HomePage() {
         <h2 className="display-xs font-bold text-neutral-950 md:text-display-lg">
           Popular Authors
         </h2>
-        <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
-          {popularAuthors.map((author) => (
-            <article
-              className="flex items-center gap-3 rounded-xl p-3 shadow-card md:gap-4 md:p-4"
-              key={author.id}
+
+        {isPopularAuthorsLoading ? <PopularAuthorsSkeletonGrid /> : null}
+
+        {isPopularAuthorsError ? (
+          <div className="grid place-items-center gap-3 rounded-xl border border-neutral-200 p-6 text-center">
+            <p className="text-sm text-neutral-700 md:text-md">
+              {(popularAuthorsError as Error)?.message ||
+                "Gagal memuat popular authors."}
+            </p>
+            <Button
+              className="rounded-full"
+              onClick={() => refetchPopularAuthors()}
+              variant="outline"
             >
-              <Avatar className="size-15 lg:size-20.25">
-                <AvatarImage alt={author.name} src={author.avatar} />
-                <AvatarFallback>AN</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-0.5">
-                <p className="text-md font-bold text-neutral-950 md:text-lg">
-                  {author.name}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  <Image
-                    alt=""
-                    aria-hidden="true"
-                    height={24}
-                    src="/blue-book-with-white-pin.svg"
-                    width={24}
-                  />
-                  <span className="text-sm text-neutral-950 md:text-md">
-                    {author.books}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              Coba Lagi
+            </Button>
+          </div>
+        ) : null}
+
+        {!isPopularAuthorsLoading && !isPopularAuthorsError ? (
+          <>
+            <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
+              {popularAuthors.map((author) => (
+                <article
+                  className="flex items-center gap-3 rounded-xl p-3 shadow-card md:gap-4 md:p-4"
+                  key={author.id}
+                >
+                  <Avatar className="size-15 lg:size-20.25">
+                    <AvatarImage alt={author.name} src={DEFAULT_AUTHOR_AVATAR} />
+                    <AvatarFallback>{getAuthorFallback(author.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid gap-0.5">
+                    <p className="text-md font-bold text-neutral-950 md:text-lg">
+                      {author.name}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        height={24}
+                        src="/blue-book-with-white-pin.svg"
+                        width={24}
+                      />
+                      <span className="text-sm text-neutral-950 md:text-md">
+                        {author.bookCount}{" "}
+                        {author.bookCount === 1 ? "book" : "books"}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {popularAuthors.length === 0 ? (
+              <p className="text-center text-sm text-neutral-700 md:text-md">
+                Belum ada popular author.
+              </p>
+            ) : null}
+
+            <div className="flex items-center justify-center">
+              <Button
+                className="h-10 w-37.5 rounded-full border border-neutral-300 bg-neutral-25 p-2 text-sm font-bold text-neutral-950 shadow-none hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-50 md:text-md"
+                disabled={
+                  isFetchingNextPopularAuthorsPage || !hasNextPopularAuthorsPage
+                }
+                onClick={() => fetchNextPopularAuthorsPage()}
+                variant="outline"
+              >
+                {isFetchingNextPopularAuthorsPage
+                  ? "Loading..."
+                  : hasNextPopularAuthorsPage
+                    ? "Load More"
+                    : "No More Authors"}
+              </Button>
+            </div>
+          </>
+        ) : null}
       </section>
     </main>
   );
