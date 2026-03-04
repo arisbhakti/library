@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bookyIconGradient" x1="56" y1="48" x2="462" y2="474" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2D82FF" />
+      <stop offset="1" stop-color="#1C65DA" />
+    </linearGradient>
+    <radialGradient id="bookyIconGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(170 142) rotate(43.5479) scale(370 354)">
+      <stop stop-color="white" stop-opacity="0.35" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="132" fill="url(#bookyIconGradient)" />
+  <rect x="24" y="24" width="464" height="464" rx="132" fill="url(#bookyIconGlow)" />
+  <rect x="56" y="56" width="400" height="400" rx="108" stroke="white" stroke-opacity="0.18" stroke-width="2" />
+
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M267.857 96H244.143V197.091L204.804 103.365L182.804 111.919L223.183 208.067L147.003 134.732L130.108 151.421L203.166 221.741L108.028 181.962L98.4578 203.585L199.343 245.714H88V268.286H199.343L98.4578 310.415L108.028 332.038L203.166 292.259L130.108 362.579L147.003 379.268L223.183 305.933L182.804 402.081L204.804 410.635L244.143 316.909V418H267.857V316.909L307.196 410.635L329.196 402.081L288.817 305.933L364.997 379.268L381.892 362.579L308.834 292.259L403.972 332.038L413.542 310.415L312.657 268.286H424V245.714H312.657L413.542 203.585L403.972 181.962L308.834 221.741L381.892 151.421L364.997 134.732L288.817 208.067L329.196 111.919L307.196 103.365L267.857 197.091V96Z"
+    fill="white"
+  />
+</svg>

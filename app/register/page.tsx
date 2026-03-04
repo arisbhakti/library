@@ -100,9 +100,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [isErrorAnimating, setIsErrorAnimating] = useState(false);
-  const redirectTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(
-    null,
-  );
+  const redirectTimeoutRef = useRef<number | null>(null);
 
   const registerMutation = useMutation({
     mutationFn: register,
