@@ -216,7 +216,7 @@ export default function HomePage() {
 
                 return (
                   <Link
-                    className="block"
+                    className="interactive-hover-card block rounded-2xl"
                     href={{
                       pathname: "/category",
                       query: { category: category.name },
@@ -284,58 +284,57 @@ export default function HomePage() {
           <>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
               {recommendationItems.map((book) => (
-                <article
-                  className="grid gap-0 overflow-hidden rounded-xl shadow-card"
-                  key={book.id}
-                >
-                  <Link href={`/detail/${book.id}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      alt={`${book.title} cover`}
-                      className="h-64.5 w-full object-cover md:h-84"
-                      loading="lazy"
-                      onError={(event) => {
-                        const image = event.currentTarget;
-                        if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
-                          return;
-                        }
-                        image.src = DEFAULT_BOOK_COVER;
-                      }}
-                      src={getBookCoverSource(book.coverImage)}
-                    />
-                  </Link>
-                  <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                <div className="interactive-hover-card rounded-xl" key={book.id}>
+                  <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
                     <Link href={`/detail/${book.id}`}>
-                      <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
-                        {book.title}
-                      </p>
-                    </Link>
-                    {book.authorId > 0 ? (
-                      <Link
-                        className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
-                        href={`/book-by-author/${book.authorId}`}
-                      >
-                        {book.author?.name || "Unknown author"}
-                      </Link>
-                    ) : (
-                      <p className="text-sm text-neutral-700 lg:text-md">
-                        {book.author?.name || "Unknown author"}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Image
-                        alt=""
-                        aria-hidden="true"
-                        height={24}
-                        src="/icon-star.svg"
-                        width={24}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        alt={`${book.title} cover`}
+                        className="h-64.5 w-full object-cover md:h-84"
+                        loading="lazy"
+                        onError={(event) => {
+                          const image = event.currentTarget;
+                          if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                            return;
+                          }
+                          image.src = DEFAULT_BOOK_COVER;
+                        }}
+                        src={getBookCoverSource(book.coverImage)}
                       />
-                      <span className="text-sm font-semibold text-neutral-700 lg:text-md">
-                        {formatRating(book.rating)}
-                      </span>
+                    </Link>
+                    <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                      <Link href={`/detail/${book.id}`}>
+                        <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
+                          {book.title}
+                        </p>
+                      </Link>
+                      {book.authorId > 0 ? (
+                        <Link
+                          className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
+                          href={`/book-by-author/${book.authorId}`}
+                        >
+                          {book.author?.name || "Unknown author"}
+                        </Link>
+                      ) : (
+                        <p className="text-sm text-neutral-700 lg:text-md">
+                          {book.author?.name || "Unknown author"}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Image
+                          alt=""
+                          aria-hidden="true"
+                          height={24}
+                          src="/icon-star.svg"
+                          width={24}
+                        />
+                        <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                          {formatRating(book.rating)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </div>
               ))}
             </div>
 
@@ -390,7 +389,11 @@ export default function HomePage() {
           <>
             <div className="grid gap-4 lg:grid-cols-4 lg:gap-5">
               {popularAuthors.map((author) => (
-                <Link href={`/book-by-author/${author.id}`} key={author.id}>
+                <Link
+                  className="interactive-hover-card block rounded-xl"
+                  href={`/book-by-author/${author.id}`}
+                  key={author.id}
+                >
                   <article className="flex items-center gap-3 rounded-xl p-3 shadow-card transition-colors hover:bg-neutral-50 md:gap-4 md:p-4">
                     <Avatar className="size-15 lg:size-20.25">
                       <AvatarImage

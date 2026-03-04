@@ -283,3 +283,14 @@ body {
 .animate-shake {
   animation: shake 0.38s ease;
 }
+
+.interactive-hover-card {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.interactive-hover-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px -16px rgb(24 29 39 / 45%);
+}

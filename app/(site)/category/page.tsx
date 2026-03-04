@@ -457,7 +457,11 @@ export default function CategoryPage() {
               <>
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
                   {books.map((book) => (
-                    <Link href={`/detail/${book.id}`} key={book.id}>
+                    <Link
+                      className="interactive-hover-card block rounded-xl"
+                      href={`/detail/${book.id}`}
+                      key={book.id}
+                    >
                       <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img

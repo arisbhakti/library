@@ -757,58 +757,60 @@ export default function DetailPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
                     {relatedBooks.map((relatedBook) => (
-                      <article
-                        className="grid gap-0 overflow-hidden rounded-xl shadow-card"
+                      <div
+                        className="interactive-hover-card rounded-xl"
                         key={relatedBook.id}
                       >
-                        <Link href={`/detail/${relatedBook.id}`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            alt={`${relatedBook.title} cover`}
-                            className="h-[258px] w-full object-cover md:h-84"
-                            loading="lazy"
-                            onError={(event) => {
-                              const image = event.currentTarget;
-                              if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
-                                return;
-                              }
-                              image.src = DEFAULT_BOOK_COVER;
-                            }}
-                            src={getBookCoverSource(relatedBook.coverImage)}
-                          />
-                        </Link>
-                        <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                        <article className="grid gap-0 overflow-hidden rounded-xl shadow-card">
                           <Link href={`/detail/${relatedBook.id}`}>
-                            <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
-                              {relatedBook.title}
-                            </p>
-                          </Link>
-                          {relatedBook.authorId > 0 ? (
-                            <Link
-                              className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
-                              href={`/book-by-author/${relatedBook.authorId}`}
-                            >
-                              {relatedBook.author?.name || "Unknown author"}
-                            </Link>
-                          ) : (
-                            <p className="text-sm text-neutral-700 lg:text-md">
-                              {relatedBook.author?.name || "Unknown author"}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-1">
-                            <Image
-                              alt=""
-                              aria-hidden="true"
-                              height={24}
-                              src="/icon-star.svg"
-                              width={24}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              alt={`${relatedBook.title} cover`}
+                              className="h-[258px] w-full object-cover md:h-84"
+                              loading="lazy"
+                              onError={(event) => {
+                                const image = event.currentTarget;
+                                if (image.src.endsWith(DEFAULT_BOOK_COVER)) {
+                                  return;
+                                }
+                                image.src = DEFAULT_BOOK_COVER;
+                              }}
+                              src={getBookCoverSource(relatedBook.coverImage)}
                             />
-                            <span className="text-sm font-semibold text-neutral-700 lg:text-md">
-                              {formatRating(relatedBook.rating)}
-                            </span>
+                          </Link>
+                          <div className="grid gap-0.5 p-3 md:gap-1 md:p-4">
+                            <Link href={`/detail/${relatedBook.id}`}>
+                              <p className="text-sm font-bold text-neutral-950 lg:text-lg line-clamp-1">
+                                {relatedBook.title}
+                              </p>
+                            </Link>
+                            {relatedBook.authorId > 0 ? (
+                              <Link
+                                className="w-fit text-sm text-neutral-700 transition-colors hover:text-primary-300 lg:text-md"
+                                href={`/book-by-author/${relatedBook.authorId}`}
+                              >
+                                {relatedBook.author?.name || "Unknown author"}
+                              </Link>
+                            ) : (
+                              <p className="text-sm text-neutral-700 lg:text-md">
+                                {relatedBook.author?.name || "Unknown author"}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Image
+                                alt=""
+                                aria-hidden="true"
+                                height={24}
+                                src="/icon-star.svg"
+                                width={24}
+                              />
+                              <span className="text-sm font-semibold text-neutral-700 lg:text-md">
+                                {formatRating(relatedBook.rating)}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </article>
+                        </article>
+                      </div>
                     ))}
                   </div>
 
