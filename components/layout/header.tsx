@@ -97,24 +97,42 @@ function getAuthViewState(isLoggedInProp: boolean): AuthViewState {
 
 function DesktopBrand() {
   return (
-    <Link className="flex items-center gap-2" href="/">
+    <Link
+      className="group relative flex items-center gap-2 rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 active:translate-y-0 active:scale-95"
+      href="/"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-1 -z-10 rounded-full bg-linear-to-r from-primary-300/40 via-sky-400/35 to-blue-200/40 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100 group-active:opacity-70"
+      />
       <Image
         alt="Booky logo"
+        className="transition-all duration-300 ease-out group-hover:-translate-y-0.5 group-hover:-rotate-6 group-active:translate-y-0 group-active:rotate-3 group-active:scale-90"
         height={42}
         priority
         src="/booky-logo.svg"
         width={42}
       />
-      <span className="display-md font-extrabold text-neutral-950">Booky</span>
+      <span className="display-md font-extrabold text-neutral-950 transition-all duration-300 group-hover:text-primary-300 group-hover:[text-shadow:0_6px_16px_rgba(28,101,218,0.25)]">
+        Booky
+      </span>
     </Link>
   );
 }
 
 function MobileBrand() {
   return (
-    <Link className="flex h-8 w-8 items-center justify-center" href="/">
+    <Link
+      className="group relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-110 active:translate-y-0 active:scale-90"
+      href="/"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-1 -z-10 rounded-full bg-linear-to-r from-primary-300/40 via-sky-400/35 to-blue-200/40 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100 group-active:opacity-70"
+      />
       <Image
         alt="Booky logo"
+        className="transition-all duration-300 ease-out group-hover:-translate-y-0.5 group-hover:-rotate-8 group-active:translate-y-0 group-active:rotate-3 group-active:scale-90"
         height={40}
         priority
         src="/booky-logo.svg"
