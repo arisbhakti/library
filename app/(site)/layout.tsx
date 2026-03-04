@@ -21,7 +21,12 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
   const router = useRouter();
   const [isAccessChecked, setIsAccessChecked] = useState(false);
   const hideFooter = pathname === "/success" || pathname.startsWith("/success/");
-  const isListPage = pathname === "/list" || pathname.startsWith("/list/");
+  const startsWithSegment = (segment: string) =>
+    pathname === segment || pathname.startsWith(`${segment}/`);
+  const isAdminPage =
+    startsWithSegment("/list") ||
+    startsWithSegment("/book") ||
+    startsWithSegment("/preview");
 
   useEffect(() => {
     const enforceRouteAccess = () => {
@@ -33,13 +38,13 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
         return;
       }
 
-      if (role === "ADMIN" && !isListPage) {
+      if (role === "ADMIN" && !isAdminPage) {
         setIsAccessChecked(false);
         router.replace("/list");
         return;
       }
 
-      if (role === "USER" && isListPage) {
+      if (role === "USER" && isAdminPage) {
         setIsAccessChecked(false);
         router.replace("/home");
         return;
@@ -57,7 +62,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       window.removeEventListener("storage", enforceRouteAccess);
       window.removeEventListener(AUTH_STATE_CHANGED_EVENT, enforceRouteAccess);
     };
-  }, [isListPage, router]);
+  }, [isAdminPage, router]);
 
   if (!isAccessChecked) {
     return null;

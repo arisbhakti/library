@@ -181,6 +181,14 @@ function BookFormContent({
     () => authorsData?.authors ?? [],
     [authorsData],
   );
+  const authorEmptyMessage =
+    normalizedAuthorKeyword.length === 0
+      ? "Type author name."
+      : isAuthorsFetching && authorOptions.length === 0
+        ? "Searching author..."
+        : !isAuthorsFetching && authorOptions.length === 0
+          ? "Author tidak ditemukan. Kamu tetap bisa pakai nama yang diketik."
+          : null;
 
   useEffect(() => {
     return () => {
@@ -530,13 +538,9 @@ function BookFormContent({
                     </ComboboxItem>
                   ))}
                 </ComboboxList>
-                <ComboboxEmpty>
-                  {normalizedAuthorKeyword.length === 0
-                    ? "Type author name."
-                    : isAuthorsFetching
-                      ? "Searching author..."
-                      : "Author tidak ditemukan. Kamu tetap bisa pakai nama yang diketik."}
-                </ComboboxEmpty>
+                {authorEmptyMessage ? (
+                  <ComboboxEmpty>{authorEmptyMessage}</ComboboxEmpty>
+                ) : null}
               </ComboboxContent>
             </Combobox>
             {selectedAuthor ? (
