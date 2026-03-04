@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useAppToast } from "@/components/ui/app-toast";
 import { register } from "@/lib/auth";
 
 function EyeIcon() {
@@ -87,6 +88,7 @@ function validateRegister(values: RegisterValues): RegisterErrors {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { showSuccessToast } = useAppToast();
   const [formValues, setFormValues] = useState<RegisterValues>({
     name: "",
     email: "",
@@ -98,7 +100,6 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [isErrorAnimating, setIsErrorAnimating] = useState(false);
-  const [successToastMessage, setSuccessToastMessage] = useState("");
   const redirectTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(
     null,
   );
@@ -113,7 +114,9 @@ export default function RegisterPage() {
       }
 
       setErrors({});
-      setSuccessToastMessage(response.message || "Register berhasil.");
+      showSuccessToast(response.message || "Register berhasil.", {
+        durationMs: 1400,
+      });
 
       if (redirectTimeoutRef.current) {
         window.clearTimeout(redirectTimeoutRef.current);
@@ -192,17 +195,6 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-screen bg-neutral-100 px-6 py-20 items-center justify-center">
-      {successToastMessage ? (
-        <div className="pointer-events-none fixed right-4 top-4 z-50 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-primary-200 bg-neutral-25 p-4 shadow-card animate-in fade-in slide-in-from-top-2 duration-300">
-          <p className="text-sm font-semibold text-primary-300">
-            {successToastMessage}
-          </p>
-          <p className="text-sm text-neutral-700">
-            Mengarahkan ke halaman login...
-          </p>
-        </div>
-      ) : null}
-
       <section className="grid w-full max-w-100 content-start gap-5 justify-self-center">
         <div className="flex items-center gap-3">
           <Image
