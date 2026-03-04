@@ -35,7 +35,9 @@ type ProfileFormValues = {
   profilePhoto: File | null;
 };
 
-type ProfileFormErrors = Partial<Record<keyof ProfileFormValues | "form", string>>;
+type ProfileFormErrors = Partial<
+  Record<keyof ProfileFormValues | "form", string>
+>;
 
 function getInitials(name: string): string {
   return name
@@ -132,13 +134,7 @@ export function ProfileTabContent() {
     profilePhoto: null,
   });
   const [formErrors, setFormErrors] = useState<ProfileFormErrors>({});
-  const {
-    data,
-    error,
-    isError,
-    isLoading,
-    refetch,
-  } = useMyProfileQuery({
+  const { data, error, isError, isLoading, refetch } = useMyProfileQuery({
     token,
     enabled: hasToken,
   });
@@ -219,7 +215,9 @@ export function ProfileTabContent() {
         role: normalizeRole(latestProfile.role),
       };
 
-      saveAuthUser(existingUser ? { ...existingUser, ...nextAuthUser } : nextAuthUser);
+      saveAuthUser(
+        existingUser ? { ...existingUser, ...nextAuthUser } : nextAuthUser,
+      );
 
       setIsDialogOpen(false);
       setFormErrors({});
@@ -307,12 +305,15 @@ export function ProfileTabContent() {
   const photoInDialog = photoPreviewUrl ?? displayProfilePhoto;
 
   return (
-    <section className="grid w-full gap-4 md:w-139.25">
+    <section className="grid w-full gap-4 md:w-139.25 md:gap-6">
       <h1 className="display-xs md:display-sm font-extrabold text-neutral-950">
         Profile
       </h1>
 
-      <article className="shadow-card grid gap-4 rounded-3xl p-4 lg:p-5" id="card-profile">
+      <article
+        className="shadow-card grid gap-4 rounded-3xl p-4 lg:p-5"
+        id="card-profile"
+      >
         {isLoading && !profile ? (
           <>
             <Skeleton className="size-16 rounded-full" />
@@ -332,13 +333,17 @@ export function ProfileTabContent() {
 
             <div className="grid gap-2">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-neutral-950 md:text-md">Name</span>
+                <span className="text-sm text-neutral-950 md:text-md">
+                  Name
+                </span>
                 <span className="text-sm font-bold text-neutral-950 md:text-md">
                   {displayName}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-neutral-950 md:text-md">Email</span>
+                <span className="text-sm text-neutral-950 md:text-md">
+                  Email
+                </span>
                 <span className="text-sm font-bold text-neutral-950 md:text-md">
                   {displayEmail}
                 </span>
@@ -403,7 +408,11 @@ export function ProfileTabContent() {
             Update Profile
           </DialogTitle>
 
-          <form className="grid gap-4" noValidate onSubmit={handleSubmitUpdateProfile}>
+          <form
+            className="grid gap-4"
+            noValidate
+            onSubmit={handleSubmitUpdateProfile}
+          >
             {formErrors.form ? (
               <p
                 className="rounded-xl bg-danger-300/10 px-4 py-2 text-sm font-semibold text-danger-300"
@@ -419,7 +428,10 @@ export function ProfileTabContent() {
               </span>
               <div className="flex flex-wrap items-center gap-3">
                 <Avatar className="size-16">
-                  <AvatarImage alt={formValues.name || "Profile photo"} src={photoInDialog} />
+                  <AvatarImage
+                    alt={formValues.name || "Profile photo"}
+                    src={photoInDialog}
+                  />
                   <AvatarFallback>
                     {getInitials(formValues.name || displayName || "User")}
                   </AvatarFallback>
@@ -441,12 +453,17 @@ export function ProfileTabContent() {
                 Format: PNG atau JPG. Maksimal 5MB.
               </p>
               {formErrors.profilePhoto ? (
-                <p className="text-sm text-danger-300">{formErrors.profilePhoto}</p>
+                <p className="text-sm text-danger-300">
+                  {formErrors.profilePhoto}
+                </p>
               ) : null}
             </div>
 
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-neutral-950 md:text-md" htmlFor="name">
+              <label
+                className="text-sm font-bold text-neutral-950 md:text-md"
+                htmlFor="name"
+              >
                 Nama
               </label>
               <Input
@@ -475,7 +492,10 @@ export function ProfileTabContent() {
             </div>
 
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-neutral-950 md:text-md" htmlFor="phone">
+              <label
+                className="text-sm font-bold text-neutral-950 md:text-md"
+                htmlFor="phone"
+              >
                 Nomor Handphone
               </label>
               <Input

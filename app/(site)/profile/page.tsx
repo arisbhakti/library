@@ -9,6 +9,8 @@ import { ProfileTabContent } from "@/app/(site)/profile/components/profile-tab-c
 import { ReviewsTabContent } from "@/app/(site)/profile/components/reviews-tab-content";
 
 type ProfileTabValue = "profile" | "borrowed-list" | "reviews";
+const TAB_CONTENT_ANIMATION_CLASS =
+  "data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -73,15 +75,24 @@ export default function ProfilePage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent className="grid gap-4" value="profile">
+          <TabsContent
+            className={`grid gap-4 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="profile"
+          >
             <ProfileTabContent />
           </TabsContent>
 
-          <TabsContent className="grid gap-4" value="borrowed-list">
+          <TabsContent
+            className={`grid gap-4 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="borrowed-list"
+          >
             <BorrowedListTabContent />
           </TabsContent>
 
-          <TabsContent className="grid gap-4" value="reviews">
+          <TabsContent
+            className={`grid gap-4 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="reviews"
+          >
             <ReviewsTabContent />
           </TabsContent>
         </Tabs>

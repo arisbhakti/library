@@ -14,6 +14,8 @@ import {
 } from "@/lib/auth";
 
 type ListTab = "borrowed-list" | "user" | "book-list";
+const TAB_CONTENT_ANIMATION_CLASS =
+  "data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300";
 
 function isAdminRole(role: string | null | undefined): boolean {
   if (typeof role !== "string") {
@@ -99,15 +101,24 @@ export default function ListPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent className="grid gap-4" value="borrowed-list">
+          <TabsContent
+            className={`grid gap-4 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="borrowed-list"
+          >
             <BorrowedListTabContent />
           </TabsContent>
 
-          <TabsContent className="grid gap-4 lg:gap-6" value="user">
+          <TabsContent
+            className={`grid gap-4 lg:gap-6 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="user"
+          >
             <UserTabContent />
           </TabsContent>
 
-          <TabsContent className="grid gap-4" value="book-list">
+          <TabsContent
+            className={`grid gap-4 ${TAB_CONTENT_ANIMATION_CLASS}`}
+            value="book-list"
+          >
             <BookListTabContent />
           </TabsContent>
         </Tabs>
