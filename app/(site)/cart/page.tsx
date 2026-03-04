@@ -8,7 +8,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppToast } from "@/components/ui/app-toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthToken } from "@/lib/auth";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -85,8 +90,12 @@ export default function CartPage() {
   const [selectionState, setSelectionState] = useState<SelectionState>({
     mode: "all",
   });
-  const [deleteTargetItemId, setDeleteTargetItemId] = useState<number | null>(null);
-  const [pendingDeleteItemId, setPendingDeleteItemId] = useState<number | null>(null);
+  const [deleteTargetItemId, setDeleteTargetItemId] = useState<number | null>(
+    null,
+  );
+  const [pendingDeleteItemId, setPendingDeleteItemId] = useState<number | null>(
+    null,
+  );
 
   const token = getAuthToken() || FALLBACK_CART_TOKEN;
   const {
@@ -115,18 +124,15 @@ export default function CartPage() {
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
   const itemIdSet = useMemo(() => new Set(itemIds), [itemIds]);
 
-  const selectedCount = useMemo(
-    () => {
-      if (selectionState.mode === "all") {
-        return itemIds.length;
-      }
+  const selectedCount = useMemo(() => {
+    if (selectionState.mode === "all") {
+      return itemIds.length;
+    }
 
-      return selectionState.selectedIds.filter((selectedId) =>
-        itemIdSet.has(selectedId),
-      ).length;
-    },
-    [itemIdSet, itemIds.length, selectionState],
-  );
+    return selectionState.selectedIds.filter((selectedId) =>
+      itemIdSet.has(selectedId),
+    ).length;
+  }, [itemIdSet, itemIds.length, selectionState]);
 
   const selectedItemIdSet = useMemo(() => {
     if (selectionState.mode === "all") {
@@ -134,7 +140,9 @@ export default function CartPage() {
     }
 
     return new Set(
-      selectionState.selectedIds.filter((selectedId) => itemIdSet.has(selectedId)),
+      selectionState.selectedIds.filter((selectedId) =>
+        itemIdSet.has(selectedId),
+      ),
     );
   }, [itemIdSet, itemIds, selectionState]);
 
@@ -152,7 +160,9 @@ export default function CartPage() {
       return;
     }
 
-    setSelectionState(checked ? { mode: "all" } : { mode: "custom", selectedIds: [] });
+    setSelectionState(
+      checked ? { mode: "all" } : { mode: "custom", selectedIds: [] },
+    );
   };
 
   const handleSelectItem = (id: number, checked: boolean) => {
@@ -161,7 +171,9 @@ export default function CartPage() {
         current.mode === "all"
           ? new Set(itemIds)
           : new Set(
-              current.selectedIds.filter((selectedId) => itemIdSet.has(selectedId)),
+              current.selectedIds.filter((selectedId) =>
+                itemIdSet.has(selectedId),
+              ),
             );
 
       if (checked) {
@@ -214,7 +226,9 @@ export default function CartPage() {
       const previousCart = queryClient.getQueryData<CartData>(queryKey);
 
       if (previousCart) {
-        const nextItems = previousCart.items.filter((item) => item.id !== itemId);
+        const nextItems = previousCart.items.filter(
+          (item) => item.id !== itemId,
+        );
 
         queryClient.setQueryData<CartData>(queryKey, {
           ...previousCart,
@@ -261,7 +275,9 @@ export default function CartPage() {
       }
 
       setDeleteTargetItemId(null);
-      showSuccessToast(mutationError.message || "Gagal menghapus buku dari cart.");
+      showSuccessToast(
+        mutationError.message || "Gagal menghapus buku dari cart.",
+      );
     },
     onSettled: (_data, _error, _itemId, context) => {
       setPendingDeleteItemId(null);
@@ -291,7 +307,9 @@ export default function CartPage() {
       <h2 className="text-xl font-bold text-neutral-950">Loan Summary</h2>
       <div className="flex items-center justify-between">
         <span className="text-md font-medium text-neutral-900">Total Book</span>
-        <span className="text-md font-bold text-neutral-950">{summaryText}</span>
+        <span className="text-md font-bold text-neutral-950">
+          {summaryText}
+        </span>
       </div>
       <Button
         className="h-12 rounded-full bg-primary-300 text-md font-bold text-neutral-25 hover:bg-primary-300/90"
@@ -337,7 +355,11 @@ export default function CartPage() {
                 <p className="text-sm text-neutral-700 md:text-md">
                   {(error as Error)?.message || "Gagal memuat cart."}
                 </p>
-                <Button className="rounded-full" onClick={() => refetch()} variant="outline">
+                <Button
+                  className="rounded-full"
+                  onClick={() => refetch()}
+                  variant="outline"
+                >
                   Coba Lagi
                 </Button>
               </div>
@@ -413,20 +435,24 @@ export default function CartPage() {
             ) : null}
           </section>
 
-          <aside className="hidden w-79.5 lg:block">{renderLoanSummary()}</aside>
+          <aside className="hidden w-79.5 lg:block">
+            {renderLoanSummary()}
+          </aside>
         </div>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-neutral-25 px-4 py-3 lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="grid gap-0">
-            <span className="text-xl text-neutral-900">Total Book</span>
-            <span className="display-xs font-semibold text-neutral-950">
+            <span className="text-sm font-medium text-neutral-900">
+              Total Book
+            </span>
+            <span className="text-sm font-bold text-neutral-950">
               {summaryText}
             </span>
           </div>
           <Button
-            className="h-10 min-w-36 rounded-full bg-primary-300 px-6 text-md font-semibold text-neutral-25 hover:bg-primary-300/90"
+            className="h-10 min-w-36 rounded-full bg-primary-300 px-6 text-sm font-bold text-neutral-25 hover:bg-primary-300/90"
             disabled={selectedCount === 0}
             onClick={handleBorrowBooks}
           >
@@ -465,7 +491,9 @@ export default function CartPage() {
             </Button>
             <Button
               className="h-11 rounded-full bg-danger-300 text-md font-semibold text-neutral-25 hover:bg-danger-300/90"
-              disabled={deleteTargetItemId === null || deleteCartItemMutation.isPending}
+              disabled={
+                deleteTargetItemId === null || deleteCartItemMutation.isPending
+              }
               onClick={handleConfirmDelete}
               type="button"
             >
