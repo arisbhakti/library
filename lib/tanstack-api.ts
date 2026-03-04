@@ -632,7 +632,7 @@ export const tanstackQueryKeys = {
     all: ["books"] as const,
     list: (params: {
       q: string | null;
-      categoryId: number | null;
+      categoryIds: number[];
       minRating: number | null;
       limit: number;
     }) => [...tanstackQueryKeys.books.all, params] as const,
@@ -1057,45 +1057,204 @@ export async function fetchAuthorBooksPage(
 
 type UseBooksInfiniteQueryParams = {
   q?: string;
-  categoryId?: number;
+  categoryIds?: number[];
   minRating?: number;
   limit?: number;
   enabled?: boolean;
 };
 
+type MultiCategoryBooksPageParam = {
+  pageByCategory: Record<string, number>;
+};
+
+type BooksInfinitePageData = BooksListData & {
+  categoryPagination?: Array<{
+    categoryId: number;
+    page: number;
+    totalPages: number;
+  }>;
+};
+
+function isMultiCategoryBooksPageParam(
+  value: unknown,
+): value is MultiCategoryBooksPageParam {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const pageByCategory = (
+    value as {
+      pageByCategory?: unknown;
+    }
+  ).pageByCategory;
+
+  return Boolean(pageByCategory && typeof pageByCategory === "object");
+}
+
 export function useBooksInfiniteQuery({
   q,
-  categoryId,
+  categoryIds = [],
   minRating,
   limit = 8,
   enabled = true,
 }: UseBooksInfiniteQueryParams = {}) {
   const normalizedQ = q?.trim() ?? "";
   const effectiveQ = normalizedQ.length > 0 ? normalizedQ : undefined;
+  const normalizedCategoryIds = Array.from(
+    new Set(
+      categoryIds.filter(
+        (categoryId) => Number.isInteger(categoryId) && categoryId > 0,
+      ),
+    ),
+  ).sort((a, b) => a - b);
+  const hasMultiCategoryFilter = normalizedCategoryIds.length > 1;
 
   return useInfiniteQuery({
     queryKey: tanstackQueryKeys.books.list({
       q: effectiveQ ?? null,
-      categoryId: categoryId ?? null,
+      categoryIds: normalizedCategoryIds,
       minRating: minRating ?? null,
       limit,
     }),
-    queryFn: ({ pageParam, signal }) => {
-      const page = typeof pageParam === "number" ? pageParam : 1;
-      return fetchBooksPage(
-        {
-          q: effectiveQ,
-          categoryId,
-          minRating,
-          page,
-          limit,
-        },
-        signal,
+    queryFn: async ({ pageParam, signal }) => {
+      if (!hasMultiCategoryFilter) {
+        const page = typeof pageParam === "number" ? pageParam : 1;
+        const categoryId = normalizedCategoryIds[0];
+
+        return fetchBooksPage(
+          {
+            q: effectiveQ,
+            categoryId,
+            minRating,
+            page,
+            limit,
+          },
+          signal,
+        );
+      }
+
+      const fallbackPageByCategory = Object.fromEntries(
+        normalizedCategoryIds.map((categoryId) => [String(categoryId), 1]),
       );
+      const pageByCategory = isMultiCategoryBooksPageParam(pageParam)
+        ? pageParam.pageByCategory
+        : fallbackPageByCategory;
+
+      const requestPlans = normalizedCategoryIds
+        .map((categoryId) => {
+          const page = pageByCategory[String(categoryId)];
+
+          if (!Number.isInteger(page) || page <= 0) {
+            return null;
+          }
+
+          return {
+            categoryId,
+            page,
+          };
+        })
+        .filter(
+          (
+            requestPlan,
+          ): requestPlan is {
+            categoryId: number;
+            page: number;
+          } => Boolean(requestPlan),
+        );
+
+      if (requestPlans.length === 0) {
+        return {
+          books: [],
+          pagination: {
+            page: 1,
+            limit,
+            total: 0,
+            totalPages: 1,
+          },
+          categoryPagination: [],
+        } satisfies BooksInfinitePageData;
+      }
+
+      const responses = await Promise.all(
+        requestPlans.map((requestPlan) =>
+          fetchBooksPage(
+            {
+              q: effectiveQ,
+              categoryId: requestPlan.categoryId,
+              minRating,
+              page: requestPlan.page,
+              limit,
+            },
+            signal,
+          ),
+        ),
+      );
+
+      const mergedBooksById = new Map<number, RecommendationBook>();
+
+      responses.forEach((response) => {
+        response.books.forEach((book) => {
+          if (!mergedBooksById.has(book.id)) {
+            mergedBooksById.set(book.id, book);
+          }
+        });
+      });
+
+      return {
+        books: Array.from(mergedBooksById.values()),
+        pagination: {
+          page: Math.max(...requestPlans.map((requestPlan) => requestPlan.page)),
+          limit,
+          total: responses.reduce(
+            (accumulator, response) => accumulator + response.pagination.total,
+            0,
+          ),
+          totalPages: Math.max(
+            ...responses.map((response) => response.pagination.totalPages),
+          ),
+        },
+        categoryPagination: responses.map((response, index) => ({
+          categoryId: requestPlans[index].categoryId,
+          page: requestPlans[index].page,
+          totalPages: response.pagination.totalPages,
+        })),
+      } satisfies BooksInfinitePageData;
     },
     enabled,
-    initialPageParam: 1,
+    initialPageParam: hasMultiCategoryFilter
+      ? {
+          pageByCategory: Object.fromEntries(
+            normalizedCategoryIds.map((categoryId) => [String(categoryId), 1]),
+          ),
+        }
+      : 1,
     getNextPageParam: (lastPage) => {
+      if (hasMultiCategoryFilter) {
+        const nextPageByCategory = (lastPage as BooksInfinitePageData)
+          .categoryPagination?.reduce<Record<string, number>>(
+            (accumulator, categoryPagination) => {
+              if (categoryPagination.page < categoryPagination.totalPages) {
+                accumulator[String(categoryPagination.categoryId)] =
+                  categoryPagination.page + 1;
+              }
+
+              return accumulator;
+            },
+            {},
+          );
+
+        if (
+          !nextPageByCategory ||
+          Object.keys(nextPageByCategory).length === 0
+        ) {
+          return undefined;
+        }
+
+        return {
+          pageByCategory: nextPageByCategory,
+        };
+      }
+
       const {
         pagination: { page, totalPages },
       } = lastPage;

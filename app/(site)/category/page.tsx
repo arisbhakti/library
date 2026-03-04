@@ -34,6 +34,25 @@ function parsePositiveInteger(value: string | null): number | null {
   return parsed;
 }
 
+function parsePositiveIntegerList(values: string[]) {
+  const parsedValues: number[] = [];
+
+  values.forEach((value) => {
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .forEach((item) => {
+        const parsed = Number(item);
+        if (Number.isInteger(parsed) && parsed > 0) {
+          parsedValues.push(parsed);
+        }
+      });
+  });
+
+  return Array.from(new Set(parsedValues));
+}
+
 function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase();
 }
@@ -71,7 +90,7 @@ type FilterFieldsProps = {
   isCategoriesError: boolean;
   categoriesErrorMessage: string;
   onRetryCategories: () => void;
-  selectedCategoryId: number | null;
+  selectedCategoryIds: number[];
   selectedRating: number | null;
   onCategoryCheckedChange: (categoryId: number, nextChecked: boolean) => void;
   onRatingCheckedChange: (rating: number, nextChecked: boolean) => void;
@@ -83,7 +102,7 @@ function FilterFields({
   isCategoriesError,
   categoriesErrorMessage,
   onRetryCategories,
-  selectedCategoryId,
+  selectedCategoryIds,
   selectedRating,
   onCategoryCheckedChange,
   onRatingCheckedChange,
@@ -127,7 +146,7 @@ function FilterFields({
               {categories.map((category) => (
                 <label className="flex items-center gap-2" key={category.id}>
                   <Checkbox
-                    checked={selectedCategoryId === category.id}
+                    checked={selectedCategoryIds.includes(category.id)}
                     className="border-neutral-300 data-[state=checked]:border-primary-300 data-[state=checked]:bg-primary-300"
                     onCheckedChange={(checked) =>
                       onCategoryCheckedChange(category.id, checked === true)
@@ -272,21 +291,32 @@ export default function CategoryPage() {
   );
 
   const categoryIdParam = parsePositiveInteger(searchParams.get("categoryId"));
-  const categoryNameParam = searchParams.get("category") || "";
-  const normalizedCategoryNameParam = normalizeCategoryName(categoryNameParam);
+  const categoryIdParams = parsePositiveIntegerList(
+    searchParams.getAll("categoryId"),
+  );
+  const selectedCategoryIdsFromParams =
+    categoryIdParams.length > 0
+      ? categoryIdParams
+      : categoryIdParam
+        ? [categoryIdParam]
+        : [];
 
-  const selectedCategoryFromId = categoryIdParam
-    ? categoryById.get(categoryIdParam) || null
-    : null;
-  const selectedCategoryFromName =
-    !selectedCategoryFromId && normalizedCategoryNameParam
-      ? categoryByNormalizedName.get(normalizedCategoryNameParam) || null
-      : null;
+  const normalizedCategoryNameParams = Array.from(
+    new Set(
+      searchParams
+        .getAll("category")
+        .map(normalizeCategoryName)
+        .filter(Boolean),
+    ),
+  );
+  const selectedCategoryIdsFromNameParams = normalizedCategoryNameParams
+    .map((name) => categoryByNormalizedName.get(name)?.id)
+    .filter((id): id is number => Boolean(id));
 
-  const selectedCategory = selectedCategoryFromId || selectedCategoryFromName;
-  const selectedCategoryId = selectedCategory?.id ?? null;
-  const effectiveCategoryId =
-    categoryIdParam ?? selectedCategoryFromName?.id ?? undefined;
+  const selectedCategoryIds =
+    selectedCategoryIdsFromParams.length > 0
+      ? selectedCategoryIdsFromParams
+      : selectedCategoryIdsFromNameParams;
 
   const minRatingParam = parsePositiveInteger(searchParams.get("minRating"));
   const selectedRating =
@@ -296,8 +326,8 @@ export default function CategoryPage() {
 
   const queryKeyword = searchParams.get("q")?.trim() || undefined;
   const isCategoryResolutionPending =
-    Boolean(normalizedCategoryNameParam) &&
-    !categoryIdParam &&
+    normalizedCategoryNameParams.length > 0 &&
+    selectedCategoryIdsFromParams.length === 0 &&
     isCategoriesLoading;
 
   const {
@@ -311,7 +341,7 @@ export default function CategoryPage() {
     refetch: refetchBooks,
   } = useBooksInfiniteQuery({
     q: queryKeyword,
-    categoryId: effectiveCategoryId,
+    categoryIds: selectedCategoryIds,
     minRating: selectedRating ?? undefined,
     limit: 8,
     enabled: !isCategoryResolutionPending,
@@ -330,16 +360,27 @@ export default function CategoryPage() {
     nextChecked: boolean,
   ) => {
     const params = new URLSearchParams(searchParams.toString());
+    const nextSelectedCategoryIds = new Set(selectedCategoryIds);
 
     if (nextChecked) {
-      const selected = categories.find(
-        (category) => category.id === categoryId,
-      );
-      if (selected) {
-        params.set("category", selected.name);
-        params.set("categoryId", String(selected.id));
-      }
+      nextSelectedCategoryIds.add(categoryId);
     } else {
+      nextSelectedCategoryIds.delete(categoryId);
+    }
+
+    params.delete("category");
+    params.delete("categoryId");
+
+    Array.from(nextSelectedCategoryIds).forEach((selectedCategoryId) => {
+      params.append("categoryId", String(selectedCategoryId));
+
+      const selectedCategory = categoryById.get(selectedCategoryId);
+      if (selectedCategory) {
+        params.append("category", selectedCategory.name);
+      }
+    });
+
+    if (nextSelectedCategoryIds.size === 0) {
       params.delete("category");
       params.delete("categoryId");
     }
@@ -387,7 +428,7 @@ export default function CategoryPage() {
                 onCategoryCheckedChange={handleCategoryCheckedChange}
                 onRatingCheckedChange={handleRatingCheckedChange}
                 onRetryCategories={() => refetchCategories()}
-                selectedCategoryId={selectedCategoryId}
+                selectedCategoryIds={selectedCategoryIds}
                 selectedRating={selectedRating}
               />
             </div>
@@ -491,7 +532,7 @@ export default function CategoryPage() {
         onCategoryCheckedChange={handleCategoryCheckedChange}
         onRatingCheckedChange={handleRatingCheckedChange}
         onRetryCategories={() => refetchCategories()}
-        selectedCategoryId={selectedCategoryId}
+        selectedCategoryIds={selectedCategoryIds}
         selectedRating={selectedRating}
       />
     </SidebarProvider>
